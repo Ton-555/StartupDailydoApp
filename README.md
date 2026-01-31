@@ -18,14 +18,14 @@ startupDaliydoApp
 
 เมื่อ clone ไปแล้วให้ npm install 
 
-## 🛠 Tech Stack
+## Tech Stack
 
-### 📱 Frontend (Mobile App)
+### Frontend (Mobile App)
 * **Framework:** React Native (Expo)
 * **Emulator:** Android Studio (Pixel 9 Pro)
 * **Language:** JavaScript
 
-### 🖥 Backend (Server & Database)
+### Backend (Server & Database)
 * **Runtime:** Node.js
 * **Framework:** Express.js
 * **Database:** MySQL
