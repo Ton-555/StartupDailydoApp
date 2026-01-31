@@ -13,12 +13,23 @@ startupDaliydoApp
 ├─ package.json
 └─ src
    ├─ backend
-   └─ frontend
+   └─ frontend 
 ```
 
 เมื่อ clone ไปแล้วให้ npm install 
 
-tech stack
-   node.js
-   android studio Pixel 9 pro
+## 🛠 Tech Stack
+
+### 📱 Frontend (Mobile App)
+* **Framework:** React Native (Expo)
+* **Emulator:** Android Studio (Pixel 9 Pro)
+* **Language:** JavaScript
+
+### 🖥 Backend (Server & Database)
+* **Runtime:** Node.js
+* **Framework:** Express.js
+* **Database:** MySQL
+* **Tools:** Postman (API Testing)
+
+---
    
