@@ -9,7 +9,7 @@ const ShopScreen = ({ onSelectProduct }) => {
   const desc = "This premium item is carefully selected for your daily needs. High quality, durable, and worth every coin.";
   const products = {
     consumer: [
-      { id: 1, name: 'แปรงสีฟัน', price: 550, icon: '🪥', description: desc, category: 'consumer' },
+      { id: 1, name: 'แปรงสีฟันtestfile1', price: 550, icon: '🪥', description: desc, category: 'consumer' },
       { id: 2, name: 'ยาสีฟัน', price: 850, icon: '🦷', description: desc, category: 'consumer' },
       { id: 3, name: 'มีดโกนหนวด', price: 1200, icon: '🪒', description: desc, category: 'consumer' },
       { id: 4, name: 'ยาสระผม', price: 1590, icon: '🧴', description: desc, category: 'consumer' },

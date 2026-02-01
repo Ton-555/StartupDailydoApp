@@ -1,0 +1,77 @@
+# Frontend File Structure & Descriptions
+
+This file describes the purpose and functionality of each file located in the `src/frontend` directory.
+
+## Screens (src/frontend/)
+
+1. **LoginScreen.js**
+   - **Purpose:** Handles user authentication.
+   - **Functionality:** Allows users to sign in with a username and password. Currently mocks a login process that redirects to the Onboarding screen.
+
+2. **OnboardingScreen.js**
+   - **Purpose:** Introduces the user to the app's features.
+   - **Functionality:** Displays a carousel or series of slides explaining the app's value proposition. Completing this flow leads to the Home screen.
+
+3. **HomeScreen.js**
+   - **Purpose:** The main landing page of the application.
+   - **Functionality:** Displays the user's current coin balance, membership status, active promotions, and quick links to other features (like Top Up or Packages).
+
+4. **ShopScreen.js**
+   - **Purpose:** A marketplace for browsing products.
+   - **Functionality:** Lists available items for purchase using coins. Allows users to select a product to view its details.
+
+5. **ProductDetailScreen.js**
+   - **Purpose:** Shows detailed information about a specific product.
+   - **Functionality:** Displays product images, descriptions, and price. Contains an "Add to Cart" or "Buy Now" button that leads to the Checkout screen.
+
+6. **ProductCheckoutScreen.js**
+   - **Purpose:** Handles the final purchase confirmation for physical goods.
+   - **Functionality:** summarizes the order, allows selection of shipping address and payment method (coins), and processes the transaction.
+
+7. **HistoryScreen.js**
+   - **Purpose:** Displays a log of past activities.
+   - **Functionality:** Lists previous transactions, including coin top-ups, product purchases, and package subscriptions.
+
+8. **HistoryDetailScreen.js**
+   - **Purpose:** Shows specific details for a single history item.
+   - **Functionality:** Provides in-depth information about a transaction, such as shipping status tracking for physical goods or transaction IDs for digital items.
+
+9. **PackageScreen.js**
+   - **Purpose:** Displays subscription or coin packages.
+   - **Functionality:** Allows users to browse and select different membership tiers or coin bundles (e.g., Starter, Silver, Gold).
+
+10. **TopUpScreen.js**
+    - **Purpose:** Interface for adding coins to the user's wallet.
+    - **Functionality:** Shows specific coin top-up options/amounts and initiates the payment flow.
+
+11. **PaymentScreen.js**
+    - **Purpose:** General payment processing screen.
+    - **Functionality:** Handles the confirmation and processing of payments for packages or top-ups.
+
+12. **ProfileScreen.js**
+    - **Purpose:** Manages user account settings.
+    - **Functionality:** Displays user details (name, email), and provides options to edit settings, view addresses, or logout.
+
+13. **screentest.js**
+    - **Purpose:** Likely a temporary or test file.
+    - **Functionality:** Used for testing components or checking screen rendering in isolation during development.
+
+---
+
+## Shared Components (src/frontend/components/)
+
+1. **BottomNav.js**
+   - **Purpose:** Global navigation bar.
+   - **Functionality:** Appears at the bottom of the screen to allow quick switching between main tabs (Home, Shop, History, Profile).
+
+2. **Header.js**
+   - **Purpose:** Standardized top header bar.
+   - **Functionality:** Displays the screen title and optional "Back" button or right-side actions (like a user icon).
+
+3. **MinimalButton.js**
+   - **Purpose:** A reusable button component.
+   - **Functionality:** Provides a consistent button style (colors, padding, rounded corners) used throughout the app.
+
+4. **MinimalInput.js**
+   - **Purpose:** A reusable text input component.
+   - **Functionality:** Provides a consistent style for text fields (like username/password inputs) with label support.
