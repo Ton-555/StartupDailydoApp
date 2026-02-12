@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { LogOut, User, Plus, MapPin, Settings, Info, ChevronRight } from 'lucide-react-native';
+import { LogOut, User, Plus, MapPin, Settings, Info, ChevronRight, CreditCard } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
 
@@ -32,9 +32,9 @@ const ProfileScreen = ({ user, onLogout, navigate }) => {
 
         {/* Menu Items */}
         <View style={styles.menuContainer}>
-          <MenuButton icon={MapPin} label="My Address" />
+          <MenuButton icon={MapPin} label="My Address" onPress={() => navigate('address')} />
+          <MenuButton icon={CreditCard} label="Credit Card" onPress={() => navigate('creditCard')} />
           <MenuButton icon={Settings} label="Settings" />
-          <MenuButton icon={Info} label="About App" />
         </View>
 
         {/* Logout Button */}

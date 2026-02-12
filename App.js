@@ -15,6 +15,8 @@ import ProductCheckoutScreen from './src/frontend/ProductCheckoutScreen';
 import HistoryScreen from './src/frontend/HistoryScreen';
 import HistoryDetailScreen from './src/frontend/HistoryDetailScreen';
 import ProfileScreen from './src/frontend/ProfileScreen';
+import AddressScreen from './src/frontend/AddressScreen';
+import CreditCardScreen from './src/frontend/CreditCardScreen';
 
 // Components
 import BottomNav from './src/frontend/components/BottomNav';
@@ -28,6 +30,8 @@ function App() {
     const [selectedPurchase, setSelectedPurchase] = useState(null);
     const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [addresses, setAddresses] = useState([]);
+    const [creditCards, setCreditCards] = useState([]);
 
     // --- Navigation Handler ---
     const navigate = (screen) => {
@@ -72,6 +76,26 @@ function App() {
         navigate('productDetail');
     }
 
+    const addAddress = (newAddress) => {
+        setAddresses([...addresses, newAddress]);
+    };
+
+    const updateAddress = (updatedAddress) => {
+        setAddresses(addresses.map(addr => addr.id === updatedAddress.id ? updatedAddress : addr));
+    };
+
+    const deleteAddress = (id) => {
+        setAddresses(addresses.filter(addr => addr.id !== id));
+    };
+
+    const addCreditCard = (newCard) => {
+        setCreditCards([...creditCards, newCard]);
+    };
+
+    const deleteCreditCard = (id) => {
+        setCreditCards(creditCards.filter(card => card.id !== id));
+    };
+
     // --- Screen Rendering Logic ---
     const renderScreen = () => {
         switch (currentScreen) {
@@ -88,12 +112,14 @@ function App() {
             case 'history': return <HistoryScreen onSelectItem={handleSelectHistoryItem} />;
             case 'historyDetail': return <HistoryDetailScreen item={selectedHistoryItem} navigate={navigate} />;
             case 'profile': return <ProfileScreen user={user} onLogout={handleLogout} navigate={navigate} />;
+            case 'address': return <AddressScreen addresses={addresses} onAddAddress={addAddress} onUpdateAddress={updateAddress} onDeleteAddress={deleteAddress} navigate={navigate} />;
+            case 'creditCard': return <CreditCardScreen cards={creditCards} onAddCard={addCreditCard} onDeleteCard={deleteCreditCard} navigate={navigate} />;
             default: return <HomeScreen user={user} navigate={navigate} />;
         }
     };
 
     // Bottom Navigation Visibility Logic
-    const showBottomNav = ['home', 'shop', 'history', 'profile', 'historyDetail', 'productDetail', 'productCheckout'].includes(currentScreen);
+    const showBottomNav = ['home', 'shop', 'history', 'profile', 'historyDetail', 'productDetail', 'productCheckout', 'address', 'creditCard'].includes(currentScreen);
 
     return (
         <SafeAreaProvider>
