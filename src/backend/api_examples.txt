@@ -1,0 +1,137 @@
+API Documentation & Usage Examples
+==================================
+
+Base URL: http://localhost:3000
+
+---------------------------------------------------
+1. Add Credit Card (เพิ่มบัตรลงฐานข้อมูล Card Information)
+---------------------------------------------------
+Method: POST
+URL:    /payment/addcreditcard
+
+Body (JSON):
+{
+    "user_id": 1,
+    "omise_customer_id": "cust_test_5p...",
+    "number_card": "4242424242424242",
+    "cvv": "123",
+    "name_card": "Somchai Jaidee",
+    "expiration_date": "12/28"
+}
+
+Response (Success):
+{
+    "success": true,
+    "message": "เพิ่มข้อมูลบัตรสำเร็จ",
+    "data": [ ... ]
+}
+
+---------------------------------------------------
+2. Get All Cards (ดึงข้อมูลบัตรทั้งหมดจาก Card Information)
+---------------------------------------------------
+Method: GET
+URL:    /payment/allcardtest
+
+Response (Success):
+{
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "user_id": 1,
+            "omise_customer_id": "cust_test_...",
+            "number_card": "4242...",
+            "cvv": "123",
+            "name_card": "Somchai Jaidee",
+            "expiration_date": "12/28"
+        }
+    ]
+}
+
+---------------------------------------------------
+3. Delete Credit Card (ลบข้อมูลบัตร)
+---------------------------------------------------
+Method: POST
+URL:    /payment/deletecard
+
+Body (JSON):
+{
+    "user_id": 1,
+    "id_card": 1
+}
+
+Response (Success):
+{
+    "success": true,
+    "message": "ลบข้อมูลบัตรสำเร็จ"
+}
+
+---------------------------------------------------
+4. Checkout (ตัดเงินแบบครั้งเดียว)
+---------------------------------------------------
+Method: POST
+URL:    /payment/checkout
+
+Body (JSON):
+{
+    "name": "Somchai Jaidee",
+    "number": "4242424242424242",
+    "expiryDate": "12/28",
+    "cvc": "123",
+    "amount": 500
+}
+
+---------------------------------------------------
+5. Get All Users (ดึงข้อมูล User ทั้งหมด)
+---------------------------------------------------
+Method: GET
+URL:    /users/alltest
+
+Response (Success):
+{
+    "success": true,
+    "data": [ ... ]
+}
+
+---------------------------------------------------
+6. Address API (จัดการที่อยู่)
+---------------------------------------------------
+
+6.1 Add/Edit Address (เพิ่มหรือแก้ไขที่อยู่)
+Method: POST
+URL:    /address/add-address
+Body (JSON):
+{
+    "id_user": 1,
+    "address": "123/456 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110"
+}
+
+Response (Success):
+{
+    "success": true,
+    "message": "บันทึกที่อยู่สำเร็จ",
+    "data": [ ... ]
+}
+
+6.2 Delete Address (ลบที่อยู่)
+Method: POST
+URL:    /address/delete-address
+Body (JSON):
+{
+    "id_user": 1
+}
+
+Response (Success):
+{
+    "success": true,
+    "message": "ลบที่อยู่สำเร็จ"
+}
+
+6.3 Get Address (ดึงข้อมูลที่อยู่)
+Method: GET
+URL:    /address/get-address/1
+Response (Success):
+{
+    "success": true,
+    "address": "123/456 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110"
+}
