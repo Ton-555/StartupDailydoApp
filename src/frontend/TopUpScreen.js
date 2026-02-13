@@ -2,29 +2,31 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Coins } from 'lucide-react-native';
 import Header from './components/Header';
+import { useTheme } from './context/ThemeContext';
 
 const TopUpScreen = ({ navigate, onSelectPackage }) => {
+    const { isDarkMode, colors } = useTheme();
     const coinPackages = [{ coins: 5, price: 5 }, { coins: 10, price: 10 }, { coins: 25, price: 25 }, { coins: 50, price: 50 }, { coins: 100, price: 100 }];
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Top Up Coins" onBack={() => navigate('profile')} />
             <View style={styles.content}>
                 <View style={styles.headerSection}>
-                    <View style={styles.iconContainer}><Coins size={32} color="#d97706" /></View>
-                    <Text style={styles.title}>Select Amount</Text>
-                    <Text style={styles.subtitle}>1 THB = 1 Coin</Text>
+                    <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? '#451a03' : '#fef3c7' }]}><Coins size={32} color="#d97706" /></View>
+                    <Text style={[styles.title, { color: colors.text }]}>Select Amount</Text>
+                    <Text style={[styles.subtitle, { color: colors.subText }]}>1 THB = 1 Coin</Text>
                 </View>
                 <View style={styles.grid}>
                     {coinPackages.map((pkg) => (
                         <TouchableOpacity
                             key={pkg.coins}
                             onPress={() => onSelectPackage({ type: 'coin', name: `${pkg.coins} Coins`, price: `฿${pkg.price}`, detail: 'Instant Top Up' })}
-                            style={styles.card}
+                            style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
                         >
-                            <Text style={styles.coinAmount}>{pkg.coins}</Text>
-                            <Text style={styles.coinLabel}>Coins</Text>
-                            <View style={styles.priceTag}>
-                                <Text style={styles.priceText}>฿{pkg.price}</Text>
+                            <Text style={[styles.coinAmount, { color: colors.text }]}>{pkg.coins}</Text>
+                            <Text style={[styles.coinLabel, { color: colors.subText }]}>Coins</Text>
+                            <View style={[styles.priceTag, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5' }]}>
+                                <Text style={[styles.priceText, { color: isDarkMode ? colors.subText : '#52525b' }]}>฿{pkg.price}</Text>
                             </View>
                         </TouchableOpacity>
                     ))}

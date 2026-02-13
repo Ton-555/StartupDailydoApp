@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { CheckCircle, Box, Truck, MapPin, Gift } from 'lucide-react-native';
 import Header from './components/Header';
+import { useTheme } from './context/ThemeContext';
 
 const HistoryDetailScreen = ({ item, navigate }) => {
+    const { isDarkMode, colors } = useTheme();
     if (!item) return <View style={styles.center}><Text>Item not found</Text></View>;
 
     const timeline = [
@@ -14,17 +16,17 @@ const HistoryDetailScreen = ({ item, navigate }) => {
     ];
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Order Details" onBack={() => navigate('history')} />
             <ScrollView contentContainerStyle={styles.content}>
 
                 {/* Order Info Card */}
-                <View style={styles.card}>
+                <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.infoRow}>
-                        <View style={styles.iconBox}><Text style={{ fontSize: 32 }}>📦</Text></View>
+                        <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5' }]}><Text style={{ fontSize: 32 }}>📦</Text></View>
                         <View style={styles.details}>
-                            <Text style={styles.productName}>{item.productName}</Text>
-                            <Text style={styles.trackingId}>Tracking ID: {item.trackingId || 'Preparing...'}</Text>
+                            <Text style={[styles.productName, { color: colors.text }]}>{item.productName}</Text>
+                            <Text style={[styles.trackingId, { color: colors.subText }]}>Tracking ID: {item.trackingId || 'Preparing...'}</Text>
                             <View style={styles.coinRow}>
                                 <Gift size={16} color="#f59e0b" />
                                 <Text style={styles.coinsText}>{item.coinsUsed} Coins</Text>
@@ -34,21 +36,23 @@ const HistoryDetailScreen = ({ item, navigate }) => {
                 </View>
 
                 {/* Timeline Card */}
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>Tracking Status</Text>
+                <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Tracking Status</Text>
                     <View style={styles.timelineContainer}>
-                        <View style={styles.timelineLine} />
+                        <View style={[styles.timelineLine, { backgroundColor: colors.border }]} />
                         {timeline.map((step, idx) => (
                             <View key={idx} style={styles.timelineItem}>
                                 <View style={[
                                     styles.stepIcon,
-                                    step.active ? styles.stepActive : styles.stepInactive
+                                    step.active
+                                        ? (isDarkMode ? styles.stepActiveDark : styles.stepActive)
+                                        : (isDarkMode ? styles.stepInactiveDark : styles.stepInactive)
                                 ]}>
-                                    <step.icon size={14} color={step.active ? '#ffffff' : '#d4d4d8'} />
+                                    <step.icon size={14} color={step.active ? '#ffffff' : (isDarkMode ? '#52525b' : '#d4d4d8')} />
                                 </View>
                                 <View style={[styles.stepContent, !step.active && styles.opacityLow]}>
-                                    <Text style={styles.stepStatus}>{step.status}</Text>
-                                    <Text style={styles.stepDate}>{step.date}</Text>
+                                    <Text style={[styles.stepStatus, { color: colors.text }]}>{step.status}</Text>
+                                    <Text style={[styles.stepDate, { color: colors.subText }]}>{step.date}</Text>
                                 </View>
                             </View>
                         ))}
@@ -153,9 +157,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#18181b',
         borderColor: '#18181b',
     },
+    stepActiveDark: {
+        backgroundColor: '#f4f4f5',
+        borderColor: '#f4f4f5',
+    },
     stepInactive: {
         backgroundColor: '#ffffff',
         borderColor: '#e4e4e7',
+    },
+    stepInactiveDark: {
+        backgroundColor: '#27272a',
+        borderColor: '#3f3f46',
     },
     stepContent: {
         flex: 1,

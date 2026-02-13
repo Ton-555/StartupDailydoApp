@@ -3,58 +3,70 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { QrCode, CreditCard as DebitCard, Check } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
+import { useTheme } from './context/ThemeContext';
 
 const PaymentScreen = ({ navigate, item }) => {
+  const { isDarkMode, colors } = useTheme();
   const [method, setMethod] = useState('qrcode'); // 'qrcode' | 'card'
 
   if (!item) return <View style={styles.center}><Text>No item selected</Text></View>;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Checkout" onBack={() => navigate(item.type === 'coin' ? 'topup' : 'package')} />
       <View style={styles.content}>
-        <Text style={styles.sectionHeader}>Order Summary</Text>
-        <View style={styles.summaryCard}>
+        <Text style={[styles.sectionHeader, { color: colors.subText }]}>Order Summary</Text>
+        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.summaryRow}>
             <View>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemDetail}>{item.detail}</Text>
+              <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+              <Text style={[styles.itemDetail, { color: colors.subText }]}>{item.detail}</Text>
             </View>
-            <View style={styles.priceBadge}>
-              <Text style={styles.priceText}>{item.price}</Text>
+            <View style={[styles.priceBadge, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b' }]}>
+              <Text style={[styles.priceText, { color: isDarkMode ? '#18181b' : '#ffffff' }]}>{item.price}</Text>
             </View>
           </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total to Pay</Text>
-            <Text style={styles.totalAmount}>{item.price}</Text>
+          <View style={[styles.totalRow, { borderTopColor: colors.border }]}>
+            <Text style={[styles.totalLabel, { color: colors.text }]}>Total to Pay</Text>
+            <Text style={[styles.totalAmount, { color: colors.text }]}>{item.price}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionHeader}>Payment Method</Text>
+        <Text style={[styles.sectionHeader, { color: colors.subText }]}>Payment Method</Text>
         <View style={styles.methodsContainer}>
           <TouchableOpacity
             onPress={() => setMethod('qrcode')}
-            style={[styles.methodCard, method === 'qrcode' ? styles.methodSelected : styles.methodUnselected]}
+            style={[
+              styles.methodCard,
+              method === 'qrcode'
+                ? [styles.methodSelected, { backgroundColor: colors.card, borderColor: isDarkMode ? '#f4f4f5' : '#18181b' }]
+                : [styles.methodUnselected, { backgroundColor: colors.card, borderColor: colors.border }]
+            ]}
           >
             <View style={styles.methodInfo}>
-              <View style={styles.iconContainer}><QrCode size={24} color="#18181b" /></View>
-              <Text style={styles.methodTitle}>QR Code PromptPay</Text>
+              <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5' }]}><QrCode size={24} color={colors.text} /></View>
+              <Text style={[styles.methodTitle, { color: colors.text }]}>QR Code PromptPay</Text>
             </View>
             {method === 'qrcode' && (
-              <View style={styles.checkContainer}><Check size={12} color="white" /></View>
+              <View style={[styles.checkContainer, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b' }]}><Check size={12} color={isDarkMode ? '#18181b' : 'white'} /></View>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => setMethod('card')}
-            style={[styles.methodCard, method === 'card' ? styles.methodSelected : styles.methodUnselected]}
+            style={[
+              styles.methodCard,
+              method === 'card'
+                ? [styles.methodSelected, { backgroundColor: colors.card, borderColor: isDarkMode ? '#f4f4f5' : '#18181b' }]
+                : [styles.methodUnselected, { backgroundColor: colors.card, borderColor: colors.border }]
+            ]}
           >
             <View style={styles.methodInfo}>
-              <View style={styles.iconContainer}><DebitCard size={24} color="#18181b" /></View>
-              <Text style={styles.methodTitle}>Credit / Debit Card</Text>
+              <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5' }]}><DebitCard size={24} color={colors.text} /></View>
+              <Text style={[styles.methodTitle, { color: colors.text }]}>Credit / Debit Card</Text>
             </View>
             {method === 'card' && (
-              <View style={styles.checkContainer}><Check size={12} color="white" /></View>
+              <View style={[styles.checkContainer, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b' }]}><Check size={12} color={isDarkMode ? '#18181b' : 'white'} /></View>
             )}
           </TouchableOpacity>
         </View>

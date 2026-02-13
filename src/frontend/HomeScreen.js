@@ -1,26 +1,35 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { User, Image as ImageIcon, Gift, Package, ChevronRight } from 'lucide-react-native';
 import Header from './components/Header';
+import { useTheme } from './context/ThemeContext';
 
 const HomeScreen = ({ user, navigate }) => {
+  const { isDarkMode, colors, theme } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         title="Home"
         rightAction={
-          <View style={styles.profileIcon}>
-            <User size={16} color="#000" />
+          <View style={[styles.profileIcon, { backgroundColor: isDarkMode ? '#3f3f46' : '#e4e4e7' }]}>
+            <User size={16} color={colors.text} />
           </View>
         }
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        {/* Banner */}
-        <View style={styles.banner}>
-          <ImageIcon size={40} color="#a1a1aa" style={{ marginBottom: 8 }} />
-          <Text style={styles.bannerText}>Advertising Banner</Text>
-        </View>
+        {/* Banner - Feature In-App Product */}
+        <TouchableOpacity onPress={() => navigate('shop')} activeOpacity={0.9} style={styles.bannerContainer}>
+          <Image
+            source={{ uri: 'https://www.bennett.co.th/album/banner/large/c2c5b8844a031b488a766bf73ebb168b.jpg' }}
+            style={styles.banner}
+          />
+          <View style={styles.bannerOverlay}>
+            <Text style={styles.bannerText}>Your Daily Refresh</Text>
+            <Text style={styles.bannerSubText}>Elevate your morning routine</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
@@ -36,35 +45,51 @@ const HomeScreen = ({ user, navigate }) => {
         </View>
 
         {/* Package Link */}
-        <TouchableOpacity onPress={() => navigate('package')} style={styles.packageLink}>
+        <TouchableOpacity onPress={() => navigate('package')} style={[styles.packageLink, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.packageContent}>
-            <View style={styles.packageIcon}>
-              <Package size={24} color="#9333ea" />
+            <View style={[styles.packageIcon, { backgroundColor: isDarkMode ? '#4c1d95' : '#faf5ff' }]}>
+              <Package size={24} color={isDarkMode ? '#ddd6fe' : '#9333ea'} />
             </View>
             <View>
-              <Text style={styles.packageTitle}>Membership Packages</Text>
-              <Text style={styles.packageSubtitle}>Upgrade for more benefits</Text>
+              <Text style={[styles.packageTitle, { color: colors.text }]}>Membership Packages</Text>
+              <Text style={[styles.packageSubtitle, { color: colors.subText }]}>Upgrade for more benefits</Text>
             </View>
           </View>
-          <ChevronRight size={24} color="#d4d4d8" />
+          <ChevronRight size={24} color={colors.subText} />
         </TouchableOpacity>
 
         {/* Promotions */}
         <View>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Promotions</Text>
-            <Text style={styles.seeAll}>View All</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Promotions</Text>
+            {/* <Text style={[styles.seeAll, { color: colors.subText }]}>View All</Text> */}
           </View>
           <View style={styles.promoGrid}>
-            {[1, 2].map((i) => (
-              <View key={i} style={styles.promoCard}>
-                <View style={styles.promoImage}>
-                  <Gift size={24} color="#d4d4d8" />
-                </View>
-                <Text style={styles.promoTitle}>Special Deal #{i}</Text>
-                <Text style={styles.promoSubtitle}>Limited time offer</Text>
+            {/* Promo 1 */}
+            <TouchableOpacity onPress={() => navigate('shop')} activeOpacity={0.9} style={[styles.promoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.badgeContainer}>
+                <Text style={styles.badgeText}>-30%</Text>
               </View>
-            ))}
+              <Image
+                source={{ uri: 'https://s3.konvy.com/static/team/2025/0519/17476427822408.jpg' }}
+                style={[styles.promoImage, { backgroundColor: isDarkMode ? '#3f3f46' : '#f4f4f5' }]}
+              />
+              <Text style={[styles.promoTitle, { color: colors.text }]}>Toothpaste</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.subText }]}>Special Price: 1,100 Coins</Text>
+            </TouchableOpacity>
+
+            {/* Promo 2 */}
+            <TouchableOpacity onPress={() => navigate('shop')} activeOpacity={0.9} style={[styles.promoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.badgeContainer}>
+                <Text style={styles.badgeText}>Sale</Text>
+              </View>
+              <Image
+                source={{ uri: 'https://www.organicpavilion.com/cdn/shop/files/OLY.Honey_1024x1024.jpg?v=1727349697' }}
+                style={[styles.promoImage, { backgroundColor: isDarkMode ? '#3f3f46' : '#f4f4f5' }]}
+              />
+              <Text style={[styles.promoTitle, { color: colors.text }]}>Butter Cereal</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.subText }]}>Buy 2 Get 1 Free</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -89,18 +114,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  bannerContainer: {
+    width: '100%',
+    height: 180,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
   banner: {
     width: '100%',
-    height: 160,
-    backgroundColor: '#e4e4e7', // zinc-200
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  bannerOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   bannerText: {
-    color: '#a1a1aa',
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  bannerSubText: {
+    color: '#e4e4e7',
     fontSize: 14,
-    fontWeight: '500',
   },
   balanceCard: {
     backgroundColor: '#18181b', // zinc-900
@@ -203,12 +244,12 @@ const styles = StyleSheet.create({
     borderColor: '#f4f4f5',
   },
   promoImage: {
-    height: 96,
-    backgroundColor: '#f4f4f5',
+    height: 120, // Increased height for better visibility
+    width: '100%',
     borderRadius: 8,
     marginBottom: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    resizeMode: 'cover',
+    backgroundColor: '#f4f4f5',
   },
   promoTitle: {
     fontSize: 14,
@@ -219,6 +260,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#a1a1aa',
     marginTop: 4,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#ef4444', // red-500
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    zIndex: 10,
+  },
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
   }
 });
 

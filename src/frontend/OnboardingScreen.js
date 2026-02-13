@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Gift, ShoppingBag, ArrowRight } from 'lucide-react-native';
 import MinimalButton from './components/MinimalButton';
+import { useTheme } from './context/ThemeContext';
 
 const OnboardingScreen = ({ onComplete }) => {
+  const { isDarkMode, colors } = useTheme();
   const [step, setStep] = useState(1);
 
   // Simplified, no complex animation logic for now to keep it stable
   const StepOne = () => (
     <View style={styles.stepContainer}>
-      <View style={styles.imageContainer}><Gift size={80} color="#d4d4d8" /></View>
-      <Text style={styles.title}>Welcome to Rewards</Text>
-      <Text style={styles.description}>Collect coins and redeem exclusive rewards just for you. Start your journey today.</Text>
+      <View style={[styles.imageContainer, { backgroundColor: colors.card }]}><Gift size={80} color={colors.subText} /></View>
+      <Text style={[styles.title, { color: colors.text }]}>Welcome to Rewards</Text>
+      <Text style={[styles.description, { color: colors.subText }]}>Collect coins and redeem exclusive rewards just for you. Start your journey today.</Text>
       <View style={{ width: 160 }}>
         <MinimalButton onClick={() => setStep(2)} variant="primary">Next <ArrowRight size={18} color="white" /></MinimalButton>
       </View>
@@ -20,9 +22,9 @@ const OnboardingScreen = ({ onComplete }) => {
 
   const StepTwo = () => (
     <View style={styles.stepContainer}>
-      <View style={styles.imageContainer}><ShoppingBag size={80} color="#d4d4d8" /></View>
-      <Text style={styles.title}>Shop & Enjoy</Text>
-      <Text style={styles.description}>Browse through our curated collection of consumables and goods.</Text>
+      <View style={[styles.imageContainer, { backgroundColor: colors.card }]}><ShoppingBag size={80} color={colors.subText} /></View>
+      <Text style={[styles.title, { color: colors.text }]}>Shop & Enjoy</Text>
+      <Text style={[styles.description, { color: colors.subText }]}>Browse through our curated collection of consumables and goods.</Text>
       <View style={styles.buttonGroup}>
         <View style={{ flex: 1 }}>
           <MinimalButton onClick={() => setStep(1)} variant="outline">Back</MinimalButton>
@@ -35,11 +37,11 @@ const OnboardingScreen = ({ onComplete }) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {step === 1 ? <StepOne /> : <StepTwo />}
       <View style={styles.indicatorContainer}>
-        <View style={[styles.indicator, step === 1 ? styles.indicatorActive : styles.indicatorInactive]} />
-        <View style={[styles.indicator, step === 2 ? styles.indicatorActive : styles.indicatorInactive]} />
+        <View style={[styles.indicator, step === 1 ? [styles.indicatorActive, { backgroundColor: colors.text }] : [styles.indicatorInactive, { backgroundColor: colors.border }]]} />
+        <View style={[styles.indicator, step === 2 ? [styles.indicatorActive, { backgroundColor: colors.text }] : [styles.indicatorInactive, { backgroundColor: colors.border }]]} />
       </View>
     </View>
   );

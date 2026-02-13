@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Home, ShoppingBag, Clock, User } from 'lucide-react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const BottomNav = ({ currentScreen, navigate }) => {
+    const { isDarkMode, colors } = useTheme();
     const navItems = [
         { id: 'home', icon: Home, label: 'Home' },
         { id: 'shop', icon: ShoppingBag, label: 'Shop' },
@@ -11,7 +13,7 @@ const BottomNav = ({ currentScreen, navigate }) => {
     ];
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
             <View style={styles.inner}>
                 {navItems.map((item) => {
                     const isActive = currentScreen === item.id ||
@@ -24,8 +26,8 @@ const BottomNav = ({ currentScreen, navigate }) => {
                             onPress={() => navigate(item.id)}
                             style={styles.item}
                         >
-                            <item.icon size={24} color={isActive ? '#18181b' : '#a1a1aa'} strokeWidth={isActive ? 2.5 : 2} />
-                            {isActive && <View style={styles.activeDot} />}
+                            <item.icon size={24} color={isActive ? colors.text : colors.subText} strokeWidth={isActive ? 2.5 : 2} />
+                            {isActive && <View style={[styles.activeDot, { backgroundColor: colors.text }]} />}
                         </TouchableOpacity>
                     );
                 })}

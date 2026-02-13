@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Crown, Check } from 'lucide-react-native';
 import Header from './components/Header';
+import { useTheme } from './context/ThemeContext';
 
 const PackageScreen = ({ navigate, onSelectPackage }) => {
+    const { isDarkMode, colors } = useTheme();
     const packages = [
         { id: 1, name: 'Starter', price: 'Free', color: '#f4f4f5', textColor: '#18181b', features: ['Basic rewards', '50 Coins/month', 'Standard Support'], icon: null },
         { id: 2, name: 'Silver', price: '฿99/mo', color: '#e2e8f0', textColor: '#1e293b', features: ['2x Coin Multiplier', '200 Coins/month', 'Priority Support', 'No Ads'], icon: null },
@@ -11,22 +13,26 @@ const PackageScreen = ({ navigate, onSelectPackage }) => {
     ];
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Packages" onBack={() => navigate('home')} />
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.headerSection}>
-                    <Text style={styles.title}>Choose Your Plan</Text>
-                    <Text style={styles.subtitle}>Unlock exclusive benefits and more coins.</Text>
+                    <Text style={[styles.title, { color: colors.text }]}>Choose Your Plan</Text>
+                    <Text style={[styles.subtitle, { color: colors.subText }]}>Unlock exclusive benefits and more coins.</Text>
                 </View>
                 {packages.map((pkg) => (
-                    <View key={pkg.id} style={[styles.card, pkg.isPopular && styles.popularCard]}>
+                    <View key={pkg.id} style={[
+                        styles.card,
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        pkg.isPopular && [styles.popularCard, { borderColor: '#facc15' }]
+                    ]}>
                         <View style={styles.cardHeader}>
                             <View>
                                 <View style={styles.cardTitleRow}>
                                     {pkg.icon && <pkg.icon size={18} color="#854d0e" style={{ marginRight: 8 }} />}
-                                    <Text style={[styles.cardTitle, { color: pkg.textColor }]}>{pkg.name}</Text>
+                                    <Text style={[styles.cardTitle, { color: isDarkMode && !pkg.isPopular ? colors.text : pkg.textColor }]}>{pkg.name}</Text>
                                 </View>
-                                <Text style={styles.cardPrice}>{pkg.price}</Text>
+                                <Text style={[styles.cardPrice, { color: colors.text }]}>{pkg.price}</Text>
                             </View>
                             {pkg.isPopular && (
                                 <View style={styles.popularBadge}>
@@ -37,16 +43,22 @@ const PackageScreen = ({ navigate, onSelectPackage }) => {
                         <View style={styles.featuresList}>
                             {pkg.features.map((feat, idx) => (
                                 <View key={idx} style={styles.featureItem}>
-                                    <View style={[styles.checkCircle, pkg.isPopular ? styles.checkPopular : styles.checkRegular]}>
-                                        <Check size={12} color={pkg.isPopular ? '#ca8a04' : '#71717a'} />
+                                    <View style={[
+                                        styles.checkCircle,
+                                        pkg.isPopular ? styles.checkPopular : [styles.checkRegular, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5' }]
+                                    ]}>
+                                        <Check size={12} color={pkg.isPopular ? '#ca8a04' : colors.subText} />
                                     </View>
-                                    <Text style={styles.featureText}>{feat}</Text>
+                                    <Text style={[styles.featureText, { color: isDarkMode ? '#d4d4d8' : '#52525b' }]}>{feat}</Text>
                                 </View>
                             ))}
                         </View>
                         <TouchableOpacity
                             onPress={() => onSelectPackage({ type: 'package', name: pkg.name + ' Plan', price: pkg.price, detail: 'Monthly Subscription' })}
-                            style={[styles.button, pkg.isPopular ? styles.buttonPopular : styles.buttonRegular]}
+                            style={[
+                                styles.button,
+                                pkg.isPopular ? styles.buttonPopular : [styles.buttonRegular, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b' }]
+                            ]}
                         >
                             <Text style={[styles.buttonText, pkg.isPopular ? styles.textPopular : styles.textRegular]}>
                                 Choose {pkg.name}

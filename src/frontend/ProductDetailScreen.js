@@ -1,29 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { Gift, ArrowRight } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
+import { useTheme } from './context/ThemeContext';
 
 const ProductDetailScreen = ({ product, navigate }) => {
+    const { isDarkMode, colors } = useTheme();
     if (!product) return <View style={styles.center}><Text>Product not found</Text></View>;
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Product Detail" onBack={() => navigate('shop')} />
             <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.imageContainer}>
-                    <Text style={styles.productIcon}>{product.icon}</Text>
+                <View style={[styles.imageContainer, { backgroundColor: colors.card, borderColor: colors.border, overflow: 'hidden' }]}>
+                    {product.image ? (
+                        <Image source={{ uri: product.image }} style={styles.productImage} />
+                    ) : (
+                        <Text style={styles.productIcon}>{product.icon}</Text>
+                    )}
                 </View>
 
-                <Text style={styles.title}>{product.name}</Text>
+                <Text style={[styles.title, { color: colors.text }]}>{product.name}</Text>
 
-                <View style={styles.priceTag}>
+                <View style={[styles.priceTag, { backgroundColor: isDarkMode ? '#451a03' : '#fffbeb', borderColor: isDarkMode ? '#78350f' : '#fef3c7' }]}>
                     <Gift size={20} color="#f59e0b" />
-                    <Text style={styles.priceText}>{product.price.toLocaleString()} Coins</Text>
+                    <Text style={[styles.priceText, { color: isDarkMode ? '#fde68a' : '#b45309' }]}>{product.price.toLocaleString()} Coins</Text>
                 </View>
 
-                <View style={styles.descriptionCard}>
-                    <Text style={styles.descTitle}>Description</Text>
-                    <Text style={styles.descText}>{product.description}</Text>
+                <View style={[styles.descriptionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Text style={[styles.descTitle, { color: colors.subText }]}>Description</Text>
+                    <Text style={[styles.descText, { color: isDarkMode ? '#d4d4d8' : '#52525b' }]}>{product.description}</Text>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -68,6 +74,11 @@ const styles = StyleSheet.create({
     },
     productIcon: {
         fontSize: 80,
+    },
+    productImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     title: {
         fontSize: 24,

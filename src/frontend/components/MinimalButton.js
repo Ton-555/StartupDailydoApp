@@ -1,7 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const MinimalButton = ({ children, onClick, variant = 'primary', className = '', icon: Icon, fullWidth = false, disabled = false }) => {
+    const { isDarkMode, colors } = useTheme();
     const isPrimary = variant === 'primary';
 
     return (
@@ -11,14 +13,14 @@ const MinimalButton = ({ children, onClick, variant = 'primary', className = '',
             style={[
                 styles.base,
                 fullWidth && styles.fullWidth,
-                isPrimary ? styles.primary : styles.secondary,
+                isPrimary
+                    ? [styles.primary, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b', shadowColor: isDarkMode ? '#000' : '#e4e4e7' }]
+                    : [styles.secondary, { backgroundColor: isDarkMode ? '#27272a' : '#f4f4f5' }],
                 disabled && styles.disabled,
-                // Helper to allow passing style objects via className prop if we were using it for styles, 
-                // but for now we'll ignore string classNames or expect style objects
             ]}
         >
-            {Icon && <Icon size={18} color={isPrimary ? '#FFF' : '#18181b'} style={{ marginRight: 8 }} />}
-            <Text style={[styles.text, isPrimary ? styles.textPrimary : styles.textSecondary]}>
+            {Icon && <Icon size={18} color={isPrimary ? '#FFF' : colors.text} style={{ marginRight: 8 }} />}
+            <Text style={[styles.text, isPrimary ? styles.textPrimary : { color: colors.text }]}>
                 {children}
             </Text>
         </TouchableOpacity>

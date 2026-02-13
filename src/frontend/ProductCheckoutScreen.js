@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import { Box, Repeat, Minus, Plus } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
+import { useTheme } from './context/ThemeContext';
 
 const ProductCheckoutScreen = ({ product, navigate }) => {
+    const { isDarkMode, colors } = useTheme();
     const [quantity, setQuantity] = useState(1);
     const [months, setMonths] = useState(1);
 
@@ -13,63 +15,78 @@ const ProductCheckoutScreen = ({ product, navigate }) => {
     const totalCoins = product.price * quantity * months;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Confirm Redemption" onBack={() => navigate('productDetail')} />
 
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Product Summary */}
-                <View style={styles.productCard}>
-                    <View style={styles.iconContainer}><Text style={styles.iconText}>{product.icon}</Text></View>
+                <View style={[styles.productCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? colors.background : '#fafafa', overflow: 'hidden' }]}>
+                        {product.image ? (
+                            <Image source={{ uri: product.image }} style={styles.productImage} />
+                        ) : (
+                            <Text style={styles.iconText}>{product.icon}</Text>
+                        )}
+                    </View>
                     <View>
-                        <Text style={styles.productName}>{product.name}</Text>
+                        <Text style={[styles.productName, { color: colors.text }]}>{product.name}</Text>
                         <Text style={styles.productPrice}>{product.price.toLocaleString()} Coins / unit</Text>
                     </View>
                 </View>
 
                 {/* Quantity Selector */}
-                <View style={styles.sectionCard}>
+                <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.sectionHeaderLine}>
                         <View style={styles.headerLabel}>
-                            <Box size={20} color="#18181b" />
-                            <Text style={styles.headerText}>Quantity</Text>
+                            <Box size={20} color={colors.text} />
+                            <Text style={[styles.headerText, { color: colors.text }]}>Quantity</Text>
                         </View>
-                        <Text style={styles.subHeader}>How many pieces?</Text>
+                        <Text style={[styles.subHeader, { color: colors.subText }]}>How many pieces?</Text>
                     </View>
-                    <View style={styles.quantityControl}>
+                    <View style={[styles.quantityControl, { backgroundColor: isDarkMode ? colors.background : '#fafafa', borderColor: colors.border }]}>
                         <TouchableOpacity
                             onPress={() => setQuantity(Math.max(1, quantity - 1))}
                             disabled={quantity <= 1}
-                            style={[styles.qtButton, quantity <= 1 && styles.buttonDisabled]}
+                            style={[
+                                styles.qtButton,
+                                quantity <= 1 && styles.buttonDisabled,
+                                { backgroundColor: colors.card, borderColor: colors.border }
+                            ]}
                         >
-                            <Minus size={18} color="#18181b" />
+                            <Minus size={18} color={quantity <= 1 ? colors.subText : colors.text} />
                         </TouchableOpacity>
-                        <Text style={styles.qtValue}>{quantity}</Text>
+                        <Text style={[styles.qtValue, { color: colors.text }]}>{quantity}</Text>
                         <TouchableOpacity
                             onPress={() => setQuantity(quantity + 1)}
-                            style={[styles.qtButton, styles.buttonDark]}
+                            style={[styles.qtButton, styles.buttonDark, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b', borderColor: isDarkMode ? '#f4f4f5' : '#18181b' }]}
                         >
-                            <Plus size={18} color="#ffffff" />
+                            <Plus size={18} color={isDarkMode ? '#18181b' : '#ffffff'} />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Recurring Delivery Selector */}
-                <View style={styles.sectionCard}>
+                <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.sectionHeaderLine}>
                         <View style={styles.headerLabel}>
-                            <Repeat size={20} color="#18181b" />
-                            <Text style={styles.headerText}>Recurring Delivery</Text>
+                            <Repeat size={20} color={colors.text} />
+                            <Text style={[styles.headerText, { color: colors.text }]}>Recurring Delivery</Text>
                         </View>
-                        <Text style={styles.subHeader}>Repeat this order?</Text>
+                        <Text style={[styles.subHeader, { color: colors.subText }]}>Repeat this order?</Text>
                     </View>
                     <View style={styles.grid}>
                         {[1, 3, 6, 12].map((m) => (
                             <TouchableOpacity
                                 key={m}
                                 onPress={() => setMonths(m)}
-                                style={[styles.durationButton, months === m ? styles.durationActive : styles.durationInactive]}
+                                style={[
+                                    styles.durationButton,
+                                    months === m
+                                        ? [styles.durationActive, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b', borderColor: isDarkMode ? '#f4f4f5' : '#18181b' }]
+                                        : [styles.durationInactive, { backgroundColor: colors.card, borderColor: colors.border }]
+                                ]}
                             >
-                                <Text style={[styles.durationText, months === m ? styles.textWhite : styles.textZinc]}>
+                                <Text style={[styles.durationText, months === m ? { color: isDarkMode ? '#18181b' : '#ffffff' } : { color: colors.subText }]}>
                                     {m === 1 ? 'One-time' : `${m} Months`}
                                 </Text>
                             </TouchableOpacity>
@@ -78,18 +95,18 @@ const ProductCheckoutScreen = ({ product, navigate }) => {
                 </View>
 
                 {/* Summary & Confirm */}
-                <View style={styles.summaryCard}>
+                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.summaryRows}>
                         <View style={styles.row}>
-                            <Text style={styles.rowLabel}>Subtotal ({quantity} items)</Text>
-                            <Text style={styles.rowValue}>{(product.price * quantity).toLocaleString()}</Text>
+                            <Text style={[styles.rowLabel, { color: colors.subText }]}>Subtotal ({quantity} items)</Text>
+                            <Text style={[styles.rowValue, { color: colors.subText }]}>{(product.price * quantity).toLocaleString()}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.rowLabel}>Duration</Text>
-                            <Text style={styles.rowValue}>{months === 1 ? '1 Month' : `${months} Months`}</Text>
+                            <Text style={[styles.rowLabel, { color: colors.subText }]}>Duration</Text>
+                            <Text style={[styles.rowValue, { color: colors.subText }]}>{months === 1 ? '1 Month' : `${months} Months`}</Text>
                         </View>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Total Coins</Text>
+                        <View style={[styles.totalRow, { borderTopColor: colors.border }]}>
+                            <Text style={[styles.totalLabel, { color: colors.text }]}>Total Coins</Text>
                             <Text style={styles.totalValue}>{totalCoins.toLocaleString()}</Text>
                         </View>
                     </View>
@@ -139,6 +156,11 @@ const styles = StyleSheet.create({
     },
     iconText: {
         fontSize: 24,
+    },
+    productImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     productName: {
         fontSize: 16,

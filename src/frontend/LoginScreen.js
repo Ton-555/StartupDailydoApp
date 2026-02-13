@@ -3,17 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Package } from 'lucide-react-native';
 import MinimalInput from './components/MinimalInput';
 import MinimalButton from './components/MinimalButton';
+import { useTheme } from './context/ThemeContext';
 
 const LoginScreen = ({ onLogin, onNavigateRegister }) => {
+  const { isDarkMode, colors } = useTheme();
   const [username, setUsername] = useState('');
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Package color="white" size={24} />
+        <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b', shadowColor: colors.border }]}>
+          <Package color={isDarkMode ? '#18181b' : 'white'} size={24} />
         </View>
-        <Text style={styles.title}>Welcome.</Text>
-        <Text style={styles.subtitle}>Sign in to continue to your account.</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome.</Text>
+        <Text style={[styles.subtitle, { color: colors.subText }]}>Sign in to continue to your account.</Text>
       </View>
       <View style={styles.form}>
         <MinimalInput label="USERNAME" placeholder="Enter your username" value={username} onChange={setUsername} />
@@ -22,9 +24,9 @@ const LoginScreen = ({ onLogin, onNavigateRegister }) => {
           <MinimalButton onClick={() => onLogin(username)} fullWidth variant="primary">Sign In</MinimalButton>
         </View>
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account?</Text>
+          <Text style={[styles.footerText, { color: colors.subText }]}>Don't have an account?</Text>
           <TouchableOpacity onPress={onNavigateRegister}>
-            <Text style={styles.linkText}>Create Account</Text>
+            <Text style={[styles.linkText, { color: colors.text }]}>Create Account</Text>
           </TouchableOpacity>
         </View>
       </View>

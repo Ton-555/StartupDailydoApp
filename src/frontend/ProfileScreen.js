@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { LogOut, User, Plus, MapPin, Settings, Info, ChevronRight } from 'lucide-react-native';
+import { LogOut, User, Plus, MapPin, CreditCard, Settings, ChevronRight } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
+import { useTheme } from './context/ThemeContext';
 
 const ProfileScreen = ({ user, onLogout, navigate }) => {
+  const { isDarkMode, colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         title="My Profile"
         rightAction={
@@ -18,28 +21,30 @@ const ProfileScreen = ({ user, onLogout, navigate }) => {
       <ScrollView contentContainerStyle={styles.content}>
 
         {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <User size={40} color="#d4d4d8" />
+        <View style={[styles.profileCard, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <View style={[styles.avatarContainer, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5', borderColor: isDarkMode ? '#3f3f46' : '#fafafa' }]}>
+            <User size={40} color={isDarkMode ? '#71717a' : '#d4d4d8'} />
             <View style={styles.avatarRing} />
           </View>
-          <Text style={styles.name}>{user.fullName}</Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>{user.fullName}</Text>
+          <Text style={[styles.email, { color: colors.subText }]}>{user.email}</Text>
           <View style={styles.topUpButton}>
             <MinimalButton fullWidth variant="primary" icon={Plus} onClick={() => navigate('topup')}>Top Up Coins</MinimalButton>
           </View>
         </View>
 
-        {/* Menu Items */}
         <View style={styles.menuContainer}>
-          <MenuButton icon={MapPin} label="My Address" />
-          <MenuButton icon={Settings} label="Settings" />
-          <MenuButton icon={Info} label="About App" />
+          <MenuButton icon={MapPin} label="My Address" onPress={() => navigate('address')} />
+          <MenuButton icon={CreditCard} label="Credit Card" onPress={() => navigate('creditcard')} />
+          <MenuButton icon={Settings} label="Settings" onPress={() => navigate('settings')} />
         </View>
 
         {/* Logout Button */}
         <View style={styles.logoutContainer}>
-          <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
+          <TouchableOpacity
+            onPress={onLogout}
+            style={[styles.logoutButton, { backgroundColor: isDarkMode ? '#450a0a' : '#fef2f2', borderColor: isDarkMode ? '#7f1d1d' : '#fee2e2' }]}
+          >
             <LogOut size={18} color="#ef4444" />
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
@@ -49,17 +54,20 @@ const ProfileScreen = ({ user, onLogout, navigate }) => {
   );
 };
 
-const MenuButton = ({ icon: Icon, label, onPress }) => (
-  <TouchableOpacity onPress={onPress} style={styles.menuItem}>
-    <View style={styles.menuLeft}>
-      <View style={styles.menuIconBox}>
-        <Icon size={20} color="#52525b" />
+const MenuButton = ({ icon: Icon, label, onPress }) => {
+  const { isDarkMode, colors } = useTheme();
+  return (
+    <TouchableOpacity onPress={onPress} style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={styles.menuLeft}>
+        <View style={[styles.menuIconBox, { backgroundColor: isDarkMode ? colors.background : '#fafafa' }]}>
+          <Icon size={20} color={isDarkMode ? colors.subText : "#52525b"} />
+        </View>
+        <Text style={[styles.menuLabel, { color: colors.text }]}>{label}</Text>
       </View>
-      <Text style={styles.menuLabel}>{label}</Text>
-    </View>
-    <ChevronRight size={18} color="#d4d4d8" />
-  </TouchableOpacity>
-);
+      <ChevronRight size={18} color={colors.subText} />
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -2,22 +2,33 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Clock } from 'lucide-react-native';
 import Header from './components/Header';
+import { useTheme } from './context/ThemeContext';
 
 const HistoryScreen = ({ onSelectItem }) => {
+  const { isDarkMode, colors } = useTheme();
   const history = [
     { id: '1', productName: 'Premium Headphones', coinsUsed: 2500, date: '24 Jan 2026, 10:30 AM', status: 'completed', trackingId: 'TH24018899X' },
     { id: '2', productName: 'Coffee Voucher', coinsUsed: 50, date: '23 Jan 2026, 02:15 PM', status: 'completed', trackingId: 'VOUCHER-DIGITAL' },
     { id: '3', productName: 'Discount Code', coinsUsed: 100, date: '20 Jan 2026, 09:00 AM', status: 'pending' },
   ];
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="History" />
       <ScrollView contentContainerStyle={styles.listContainer}>
         {history.map((item) => (
-          <TouchableOpacity key={item.id} onPress={() => onSelectItem(item)} style={styles.card}>
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => onSelectItem(item)}
+            style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
             <View style={styles.cardHeader}>
-              <Text style={styles.productName}>{item.productName}</Text>
-              <View style={[styles.statusBadge, item.status === 'completed' ? styles.statusSuccess : styles.statusPending]}>
+              <Text style={[styles.productName, { color: colors.text }]}>{item.productName}</Text>
+              <View style={[
+                styles.statusBadge,
+                item.status === 'completed'
+                  ? (isDarkMode ? styles.statusSuccessDark : styles.statusSuccess)
+                  : (isDarkMode ? styles.statusPendingDark : styles.statusPending)
+              ]}>
                 <Text style={[styles.statusText, item.status === 'completed' ? styles.textSuccess : styles.textPending]}>
                   {item.status}
                 </Text>
@@ -25,8 +36,8 @@ const HistoryScreen = ({ onSelectItem }) => {
             </View>
             <View style={styles.cardFooter}>
               <View style={styles.dateContainer}>
-                <Clock size={14} color="#71717a" />
-                <Text style={styles.dateText}>{item.date}</Text>
+                <Clock size={14} color={colors.subText} />
+                <Text style={[styles.dateText, { color: colors.subText }]}>{item.date}</Text>
               </View>
               <Text style={styles.coinsText}>-{item.coinsUsed} coins</Text>
             </View>
@@ -74,8 +85,14 @@ const styles = StyleSheet.create({
   statusSuccess: {
     backgroundColor: '#ecfdf5', // green-50
   },
+  statusSuccessDark: {
+    backgroundColor: '#064e3b',
+  },
   statusPending: {
     backgroundColor: '#fff7ed', // orange-50
+  },
+  statusPendingDark: {
+    backgroundColor: '#7c2d12',
   },
   statusText: {
     fontSize: 12,
