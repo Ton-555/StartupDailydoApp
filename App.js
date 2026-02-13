@@ -4,6 +4,7 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Screens
 import LoginScreen from './src/frontend/LoginScreen';
+import RegisterScreen from './src/frontend/RegisterScreen';
 import OnboardingScreen from './src/frontend/OnboardingScreen';
 import HomeScreen from './src/frontend/HomeScreen';
 import PackageScreen from './src/frontend/PackageScreen';
@@ -36,14 +37,28 @@ const useAppLogic = () => {
 
     const navigate = (screen) => setCurrentScreen(screen);
 
-    const login = (username) => {
+    const login = (userData) => {
         setUser({
-            username,
-            email: 'user@minimal.app',
-            phone: '081-234-5678',
-            fullName: username || 'Alex Doe',
-            idMember: 'MB-8829',
-            coins: 2450
+            username: userData.username,
+            email: userData.email || 'user@minimal.app',
+            phone: userData.phone || '081-234-5678',
+            fullName: (userData.first_name && userData.last_name)
+                ? `${userData.first_name} ${userData.last_name}`
+                : userData.username,
+            idMember: 'MB-' + (userData.id % 10000).toString().padStart(4, '0'),
+            coins: userData.coin_balance || 0
+        });
+        navigate('home'); // Login สำเร็จไปหน้า Home เลย (หรือ onboarding ตามต้องการ)
+    };
+
+    const register = (userData) => {
+        setUser({
+            username: userData.username,
+            email: userData.email || 'user@minimal.app',
+            phone: userData.phone || '081-234-5678',
+            fullName: userData.fullName || userData.username,
+            idMember: 'MB-' + Math.floor(1000 + Math.random() * 9000),
+            coins: 0
         });
         navigate('onboarding');
     };
@@ -64,7 +79,7 @@ const useAppLogic = () => {
     const handleDeleteCard = (id) => setCards(cards.filter(card => card.id !== id));
 
     return {
-        currentScreen, user, navigate, login, handleOnboardingComplete, handleLogout,
+        currentScreen, user, navigate, login, register, handleOnboardingComplete, handleLogout,
         handleSelectPurchase, handleSelectHistoryItem, handleSelectProduct,
         selectedPurchase, selectedHistoryItem, selectedProduct,
         addresses, handleAddAddress, handleUpdateAddress, handleDeleteAddress,
@@ -82,7 +97,7 @@ function App() {
 
 const AppContent = () => {
     const {
-        currentScreen, user, navigate, login, handleOnboardingComplete, handleLogout,
+        currentScreen, user, navigate, login, register, handleOnboardingComplete, handleLogout,
         handleSelectPurchase, handleSelectHistoryItem, handleSelectProduct,
         selectedPurchase, selectedHistoryItem, selectedProduct,
         addresses, handleAddAddress, handleUpdateAddress, handleDeleteAddress,
@@ -94,7 +109,7 @@ const AppContent = () => {
     const renderScreen = () => {
         switch (currentScreen) {
             case 'login': return <LoginScreen onLogin={login} onNavigateRegister={() => navigate('register')} />;
-            case 'register': return <LoginScreen onLogin={login} onNavigateRegister={() => navigate('login')} />;
+            case 'register': return <RegisterScreen onRegister={register} onNavigateLogin={() => navigate('login')} />;
             case 'onboarding': return <OnboardingScreen onComplete={handleOnboardingComplete} />;
             case 'home': return <HomeScreen user={user} navigate={navigate} />;
             case 'package': return <PackageScreen navigate={navigate} onSelectPackage={handleSelectPurchase} />;

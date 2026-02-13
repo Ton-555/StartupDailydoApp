@@ -137,6 +137,48 @@ router.post('/checkout', async (req, res) => {
     }
 });
 
+router.post('/savepayment', async (req, res) => {
+    try {
+        // รับค่าจาก React Native
+        const { success, charge, id_user } = req.body;
+
+        // ตรวจสอบข้อมูลเบื้องต้น
+        if (!id_user || !charge) {
+            return res.status(400).json({ error: 'Missing user_id or charge data' });
+        }
+
+        // 3. บันทึกลง Supabase
+        const { data, error } = await supabase
+            .from('payment_logs') // ชื่อตารางที่เราสร้างไว้
+            .insert([
+                {
+                    user_id: id_user,           // ตรงกับ user_id ใน React Native
+                    omise_charge_id: charge.id,  // "chrgtest..."
+                    amount: charge.amount,      // 100000
+                    status: success,            // true
+                    created_at: charge.created_at // "2026-02-13T..."
+                }
+            ])
+            .select(); // ขอข้อมูลที่เพิ่งบันทึกกลับมาดู
+
+        // ตรวจสอบ Error จาก Supabase
+        if (error) {
+            console.error('Supabase Error:', error);
+            return res.status(500).json({ error: error.message });
+        }
+
+        // 4. ส่งผลลัพธ์กลับไปบอก React Native
+        console.log('Saved success:', data);
+        res.status(201).json({
+            message: 'Payment history saved successfully',
+            record: data[0]
+        });
+
+    } catch (err) {
+        console.error('Server Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 
 
