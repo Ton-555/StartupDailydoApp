@@ -1,11 +1,36 @@
-import React, { useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions } from 'react-native';
 import { User, Image as ImageIcon, Gift, Package, ChevronRight } from 'lucide-react-native';
 import Header from './components/Header';
 import { useTheme } from './context/ThemeContext';
 
 const HomeScreen = ({ user, navigate, onRefreshUser }) => {
   const { isDarkMode, colors, theme } = useTheme();
+  const { width } = Dimensions.get('window');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const flatListRef = useRef(null);
+
+  const BANNERS = [
+    { id: '1', uri: 'https://www.bennett.co.th/album/banner/large/c2c5b8844a031b488a766bf73ebb168b.jpg', title: 'Your Daily Refresh', subtitle: 'Elevate your morning routine' },
+    { id: '2', uri: 'https://s3.konvy.com/static/team/2025/0519/17476427822408.jpg', title: 'Special Deal', subtitle: 'Toothpaste -30% Off' },
+    { id: '3', uri: 'https://www.organicpavilion.com/cdn/shop/files/OLY.Honey_1024x1024.jpg?v=1727349697', title: 'Healthy Choice', subtitle: 'Organic Honey Buy 2 Get 1' }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let nextIndex = activeIndex + 1;
+      if (nextIndex >= BANNERS.length) {
+        nextIndex = 0;
+      }
+      // ตรวจสอบว่า flatListRef.current ยังมีอยู่ก่อนเรียกใช้
+      if (flatListRef.current) {
+        flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
+        setActiveIndex(nextIndex);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activeIndex]);
 
   useEffect(() => {
     if (onRefreshUser) {
@@ -25,17 +50,39 @@ const HomeScreen = ({ user, navigate, onRefreshUser }) => {
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        {/* Banner - Feature In-App Product */}
-        <TouchableOpacity onPress={() => navigate('shop')} activeOpacity={0.9} style={styles.bannerContainer}>
-          <Image
-            source={{ uri: 'https://www.bennett.co.th/album/banner/large/c2c5b8844a031b488a766bf73ebb168b.jpg' }}
-            style={styles.banner}
+        {/* Banner Carousel */}
+        <View>
+          <FlatList
+            ref={flatListRef}
+            data={BANNERS}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            onMomentumScrollEnd={(event) => {
+              const index = Math.round(event.nativeEvent.contentOffset.x / (width - 32));
+              setActiveIndex(index);
+            }}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => navigate('shop')} activeOpacity={0.9} style={[styles.bannerContainer, { width: width - 32 }]}>
+                <Image source={{ uri: item.uri }} style={styles.banner} />
+                <View style={styles.bannerOverlay}>
+                  <Text style={styles.bannerText}>{item.title}</Text>
+                  <Text style={styles.bannerSubText}>{item.subtitle}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           />
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerText}>Your Daily Refresh</Text>
-            <Text style={styles.bannerSubText}>Elevate your morning routine</Text>
+          {/* Pagination Dots */}
+          <View style={styles.paginationContainer}>
+            {BANNERS.map((_, index) => (
+              <View
+                key={index}
+                style={[styles.dot, { backgroundColor: index === activeIndex ? colors.text : colors.border }]}
+              />
+            ))}
           </View>
-        </TouchableOpacity>
+        </View>
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
@@ -281,6 +328,18 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   }
 });
 

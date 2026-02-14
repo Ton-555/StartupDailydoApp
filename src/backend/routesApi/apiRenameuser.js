@@ -280,4 +280,111 @@ router.put('/:id/fullname', async (req, res) => {
 });
 
 
+// =================================
+// UPDATE EMAIL (PUT)
+// PUT /users/:id/email
+// =================================
+router.put('/:id/email', async (req, res) => {
+
+  try {
+
+    const id = parseInt(req.params.id);
+    const { email } = req.body;
+
+    if (!id || !email) {
+      return sendError(res, 'Missing email or id', 400);
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return sendError(res, 'Invalid email format', 400);
+    }
+
+    // Try to find user by id_user first
+    let { data, error } = await supabase
+      .from('users')
+      .update({ email: email.toLowerCase().trim() })
+      .eq('id_user', id)
+      .select()
+      .single();
+
+    // If not found by id_user, try users_id
+    if (error) {
+      const result = await supabase
+        .from('users')
+        .update({ email: email.toLowerCase().trim() })
+        .eq('users_id', id)
+        .select()
+        .single();
+      data = result.data;
+      error = result.error;
+    }
+
+    if (error) throw error;
+
+    return sendSuccess(res, data);
+
+  } catch (err) {
+    console.error('Email update error:', err);
+    return sendError(res, err);
+  }
+
+});
+
+
+// =================================
+// UPDATE PHONE (PUT)
+// PUT /users/:id/phone
+// =================================
+router.put('/:id/phone', async (req, res) => {
+
+  try {
+
+    const id = parseInt(req.params.id);
+    const { phone } = req.body;
+
+    if (!id || !phone) {
+      return sendError(res, 'Missing phone or id', 400);
+    }
+
+    // Validate phone format (exactly 10 digits)
+    const phoneDigitsOnly = phone.replace(/\D/g, '');
+    
+    if (phoneDigitsOnly.length !== 10) {
+      return sendError(res, 'Invalid phone format (must be exactly 10 digits)', 400);
+    }
+
+    // Try to find user by id_user first
+    let { data, error } = await supabase
+      .from('users')
+      .update({ phone: phone.trim() })
+      .eq('id_user', id)
+      .select()
+      .single();
+
+    // If not found by id_user, try users_id
+    if (error) {
+      const result = await supabase
+        .from('users')
+        .update({ phone: phone.trim() })
+        .eq('users_id', id)
+        .select()
+        .single();
+      data = result.data;
+      error = result.error;
+    }
+
+    if (error) throw error;
+
+    return sendSuccess(res, data);
+
+  } catch (err) {
+    console.error('Phone update error:', err);
+    return sendError(res, err);
+  }
+
+});
+
+
 module.exports = router;

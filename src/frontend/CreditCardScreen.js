@@ -43,6 +43,16 @@ const CreditCardScreen = ({ cards, onAddCard, onDeleteCard, navigate }) => {
             return;
         }
 
+        if (newCard.cardNumber.length !== 16) {
+            Alert.alert('Validation Error', 'Card number must be exactly 16 digits');
+            return;
+        }
+
+        if (newCard.cvv.length !== 3) {
+            Alert.alert('Validation Error', 'CVV must be exactly 3 digits');
+            return;
+        }
+
         // Basic YYYY-MM-DD validation
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(newCard.expiryDate)) {
@@ -101,14 +111,21 @@ const CreditCardScreen = ({ cards, onAddCard, onDeleteCard, navigate }) => {
                             label="Card Number"
                             placeholder="0000 0000 0000 0000"
                             value={newCard.cardNumber}
-                            onChange={(text) => setNewCard({ ...newCard, cardNumber: text })}
+                            onChange={(text) => {
+                                const numeric = text.replace(/\D/g, '').slice(0, 16);
+                                setNewCard({ ...newCard, cardNumber: numeric });
+                            }}
                             keyboardType="numeric"
+                            maxLength={16}
                         />
                         <MinimalInput
                             label="Card Holder Name"
                             placeholder="John Doe"
                             value={newCard.cardHolder}
-                            onChange={(text) => setNewCard({ ...newCard, cardHolder: text })}
+                            onChange={(text) => {
+                                const alphabetic = text.replace(/[^a-zA-Z\s]/g, '');
+                                setNewCard({ ...newCard, cardHolder: alphabetic });
+                            }}
                         />
                         <View style={styles.row}>
                             <View style={{ flex: 1, marginRight: 8 }}>
@@ -125,8 +142,12 @@ const CreditCardScreen = ({ cards, onAddCard, onDeleteCard, navigate }) => {
                                     label="CVV"
                                     placeholder="123"
                                     value={newCard.cvv}
-                                    onChange={(text) => setNewCard({ ...newCard, cvv: text })}
+                                    onChange={(text) => {
+                                        const numeric = text.replace(/\D/g, '').slice(0, 3);
+                                        setNewCard({ ...newCard, cvv: numeric });
+                                    }}
                                     keyboardType="numeric"
+                                    maxLength={3}
                                     type="password"
                                 />
                             </View>

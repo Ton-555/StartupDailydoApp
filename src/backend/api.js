@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 //routes แต่ละไฟล์
 const paymentRouter = require('./routesApi/apiPayment');
 const userRouter = require('./routesApi/apiUser');
+const renameUserRouter = require('./routesApi/apiRenameuser');
 const registerRouter = require('./routesApi/apiAuth');
 const productRouter = require('./routesApi/apiproduct');
 const addressRouter = require('./routesApi/apiAddress');
@@ -24,6 +25,7 @@ const historyRouter = require('./routesApi/apiHistory');
 app.use('/payment', paymentRouter);
 app.use('/auth', registerRouter);
 app.use('/users', userRouter);
+app.use('/users', renameUserRouter);
 app.use('/products', productRouter);
 app.use('/address', addressRouter);
 app.use('/buy', buyProductRouter);

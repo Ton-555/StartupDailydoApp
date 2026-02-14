@@ -14,44 +14,68 @@ const RegisterScreen = ({ onRegister, onNavigateLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [fullName, setFullName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleRegister = async () => {
         // ตรวจสอบว่า password ตรงกันหรือไม่
         if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match!');
+            Alert.alert('Password Error', 'Passwords do not match!');
+            return;
+        }
+
+        // ตรวจสอบความยาวรหัสผ่าน (อย่างน้อย 8 ตัวอักษร)
+        if (password.length < 8) {
+            Alert.alert('Weak Password', 'Password must be at least 8 characters long.');
+            return;
+        }
+
+        // ตรวจสอบความซับซ้อน (ต้องมีตัวอักษรและตัวเลข)
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        if (!hasLetter || !hasNumber) {
+            Alert.alert('Weak Password', 'Password must contain both letters and numbers.');
             return;
         }
 
         // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
-        if (!username || !email || !password || !fullName) {
+        if (!username || !email || !password || !firstName || !lastName) {
             Alert.alert('Error', 'Please fill in all required fields!');
             return;
         }
 
-        // แยก first_name และ last_name จาก fullName
-        const nameParts = fullName.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+        // ตรวจสอบ Username (ความยาวและตัวอักษรที่อนุญาต)
+        const cleanUsername = username.trim();
+        if (cleanUsername.length < 4) {
+            Alert.alert('Invalid Username', 'Username must be at least 4 characters long.');
+            return;
+        }
+
+        // อนุญาตเฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และ underscore
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        if (!usernameRegex.test(cleanUsername)) {
+            Alert.alert('Invalid Username', 'Username can only contain letters, numbers, and underscores.');
+            return;
+        }
 
         setIsLoading(true);
 
         try {
             // เรียก API สำหรับ register
             const response = await authAPI.register({
-                username: username,
+                username: cleanUsername,
                 password: password,
                 first_name: firstName,
                 last_name: lastName,
-                user_id: username // ส่ง user_id เป็น username เหมือนกัน
+                user_id: cleanUsername // ส่ง user_id เป็น username เหมือนกัน
             });
 
             console.log('Registration successful:', response);
 
             // บันทึกข้อมูลลงใน globalState
-            globalState.setCredentials(username, password);
+            globalState.setCredentials(cleanUsername, password);
             globalState.setUserEmail(email);
             console.log('Saved to globalState:', globalState.getAllData());
 
@@ -83,12 +107,24 @@ const RegisterScreen = ({ onRegister, onNavigateLogin }) => {
                 </View>
 
                 <View style={styles.form}>
-                    <MinimalInput
-                        label="FULL NAME"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={setFullName}
-                    />
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                        <View style={{ flex: 1 }}>
+                            <MinimalInput
+                                label="FIRST NAME"
+                                placeholder="John"
+                                value={firstName}
+                                onChange={setFirstName}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <MinimalInput
+                                label="LAST NAME"
+                                placeholder="Doe"
+                                value={lastName}
+                                onChange={setLastName}
+                            />
+                        </View>
+                    </View>
 
                     <MinimalInput
                         label="USERNAME"

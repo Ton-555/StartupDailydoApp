@@ -1,4 +1,3 @@
-// ...existing code...
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Gift } from 'lucide-react-native';
@@ -109,40 +108,41 @@ const ShopScreen = ({ onSelectProduct }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#ffffff',
   },
   tabContainer: {
     padding: 16,
-    backgroundColor: 'rgba(250, 250, 250, 0.95)',
+    backgroundColor: '#ffffff',
     zIndex: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f7',
   },
   tabsWrapper: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f7',
     padding: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e4e4e7',
+    borderRadius: 10,
+    borderWidth: 0,
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 8,
   },
   tabActive: {
-    backgroundColor: '#18181b', // zinc-900
+    backgroundColor: '#1d1d1f',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
   },
   tabActiveDark: {
-    backgroundColor: '#3f3f46',
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -150,42 +150,47 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
+    letterSpacing: -0.3,
   },
   tabTextActive: {
     color: '#ffffff',
   },
   tabTextInactive: {
-    color: '#71717a',
+    color: '#86868b',
   },
   tabTextInactiveDark: {
-    color: '#a1a1aa',
+    color: '#1d1d1f',
   },
   productList: {
     padding: 16,
-    paddingTop: 0,
+    paddingTop: 12,
     gap: 12,
   },
   productCard: {
     backgroundColor: '#ffffff',
     padding: 16,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#f4f4f5',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
   productInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 14,
+    flex: 1,
   },
   productIconContainer: {
     width: 64,
     height: 64,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#f5f5f7',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -197,12 +202,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderRadius: 12,
   },
   productName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#18181b',
+    fontWeight: '600',
+    color: '#1d1d1f',
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   priceRow: {
     flexDirection: 'row',
@@ -211,19 +218,19 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#f59e0b', // amber-500
+    fontWeight: '600',
+    color: '#f59e0b',
   },
   redeemButton: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: '#18181b',
+    backgroundColor: '#1d1d1f',
   },
   redeemText: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '600',
   }
 });
 
