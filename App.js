@@ -47,7 +47,9 @@ const useAppLogic = () => {
                 ? `${userData.first_name} ${userData.last_name}`
                 : userData.username,
             idMember: 'MB-' + (userData.users_id % 10000).toString().padStart(4, '0'),
-            coins: userData.coin_balance || 0
+            coins: userData.coin_balance || 0,
+            package_id: userData.package_id || null,
+            package_end: userData.package_end || null
         });
         refreshCards(userData.users_id);
         refreshAddress(userData.users_id);
@@ -62,7 +64,9 @@ const useAppLogic = () => {
             phone: userData.phone || '081-234-5678',
             fullName: userData.fullName || userData.username,
             idMember: 'MB-' + Math.floor(1000 + Math.random() * 9000),
-            coins: 0
+            coins: 0,
+            package_id: null,
+            package_end: null
         });
         navigate('onboarding');
     };
@@ -82,7 +86,9 @@ const useAppLogic = () => {
                         : (directData.first_name || directData.username || prev.username),
                     coins: Number(directData.coin_balance ?? prev.coins),
                     email: directData.email || prev.email,
-                    phone: directData.phone || prev.phone
+                    phone: directData.phone || prev.phone,
+                    package_id: directData.package_id ?? prev.package_id,
+                    package_end: directData.package_end ?? prev.package_end
                 };
                 return updated;
             });
@@ -113,7 +119,9 @@ const useAppLogic = () => {
                             : (userData.first_name || userData.username || prev.username),
                         coins: Number(userData.coin_balance ?? prev.coins),
                         email: userData.email || prev.email,
-                        phone: userData.phone || prev.phone
+                        phone: userData.phone || prev.phone,
+                        package_id: userData.package_id ?? prev.package_id,
+                        package_end: userData.package_end ?? prev.package_end
                     };
                     console.log(`[refreshUser] State updated. New coins: ${updated.coins}`);
                     return updated;
