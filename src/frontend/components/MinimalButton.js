@@ -15,13 +15,18 @@ const MinimalButton = ({ children, onClick, variant = 'primary', className = '',
                 styles.base,
                 fullWidth && styles.fullWidth,
                 isPrimary
-                    ? [styles.primary, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b', shadowColor: isDarkMode ? '#000' : '#e4e4e7' }]
-                    : [styles.secondary, { backgroundColor: isDarkMode ? '#27272a' : '#f4f4f5' }],
+                    ? [styles.primary, { backgroundColor: colors.primary, shadowColor: isDarkMode ? '#000' : '#e4e4e7' }]
+                    : [styles.secondary, { backgroundColor: colors.secondary }],
                 isDisabled && styles.disabled,
             ]}
         >
-            {Icon && !loading && <Icon size={18} color={isPrimary ? '#FFF' : colors.text} style={{ marginRight: 8 }} />}
-            <Text style={[styles.text, isPrimary ? styles.textPrimary : { color: colors.text }]}>
+            {Icon && !loading && <Icon size={18} color={isPrimary ? (isDarkMode ? '#18181b' : '#FFF') : colors.text} style={{ marginRight: 8 }} />}
+            <Text style={[
+                styles.text,
+                isPrimary
+                    ? { color: isDarkMode ? '#18181b' : '#FFF' }
+                    : { color: colors.text }
+            ]}>
                 {loading ? 'Processing...' : children}
             </Text>
         </TouchableOpacity>

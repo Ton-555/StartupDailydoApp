@@ -40,10 +40,7 @@ const HistoryScreen = ({ onSelectItem, user }) => {
 
           // Safe product name access
           let prodName = 'Unknown Product';
-          if (order.products_id === 1001) prodName = 'Standard Plan';
-          else if (order.products_id === 1002) prodName = 'Premium Plan';
-          else if (order.products_id === 1003) prodName = 'Platinum Plan';
-          else if (order.products) {
+          if (order.products) {
             if (Array.isArray(order.products)) {
               prodName = order.products[0]?.name || 'Unknown Product';
             } else {
@@ -54,10 +51,31 @@ const HistoryScreen = ({ onSelectItem, user }) => {
           // Safe ID handling
           const safeId = order.id ? order.id.toString() : `temp-${index}`;
 
+          // Determine coins used for this order safely from several possible fields
+          const coins = (() => {
+            if (order.coins_used != null) return order.coins_used;
+            if (order.coinsUsed != null) return order.coinsUsed;
+            if (order.coins != null) return order.coins;
+            if (order.total_coin != null) return order.total_coin;
+            if (order.total_price != null) return order.total_price;
+            if (order.price != null) return Number(order.price) || 0;
+            if (order.amount != null) return Number(order.amount) || 0;
+            if (order.products) {
+              const p = Array.isArray(order.products) ? order.products[0] : order.products;
+              if (p) {
+                if (p.coins != null) return p.coins;
+                if (p.price_coin != null) return p.price_coin;
+                if (p.price != null) return Number(p.price) || 0;
+                if (p.total_price != null) return p.total_price;
+              }
+            }
+            return 0;
+          })();
+
           return {
             id: safeId,
             productName: prodName,
-            coinsUsed: order.total_price || 0,
+            coinsUsed: coins,
             date: timeStr ? `${dateStr}, ${timeStr}` : dateStr,
             status: order.status || 'pending',
             trackingId: order.tracking_number || '-'

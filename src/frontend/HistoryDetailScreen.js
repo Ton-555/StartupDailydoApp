@@ -8,6 +8,26 @@ const HistoryDetailScreen = ({ item, navigate }) => {
     const { isDarkMode, colors } = useTheme();
     if (!item) return <View style={styles.center}><Text>Item not found</Text></View>;
 
+    // Determine how many coins were paid for this order/product.
+    const coinsPaid = (() => {
+        if (item.coinsUsed != null) return item.coinsUsed;
+        if (item.coins != null) return item.coins;
+        if (item.total_coin != null) return item.total_coin;
+        if (item.total_price != null) return item.total_price;
+        if (item.price != null) return Number(item.price) || 0;
+        if (item.amount != null) return Number(item.amount) || 0;
+        // If original order object was attached, try to pull from products
+        if (item.products) {
+            const prod = Array.isArray(item.products) ? item.products[0] : item.products;
+            if (prod) {
+                if (prod.coins != null) return prod.coins;
+                if (prod.price_coin != null) return prod.price_coin;
+                if (prod.price != null) return Number(prod.price) || 0;
+                if (prod.total_price != null) return prod.total_price;
+            }
+        }
+        return 0;
+    })();
     const timeline = [
         { status: 'Order Placed', date: '2026-01-24 10:30', active: true, icon: CheckCircle },
         { status: 'Preparing', date: '2026-01-24 14:00', active: true, icon: Box },
@@ -29,7 +49,7 @@ const HistoryDetailScreen = ({ item, navigate }) => {
                             <Text style={[styles.trackingId, { color: colors.subText }]}>Tracking ID: {item.trackingId || 'Preparing...'}</Text>
                             <View style={styles.coinRow}>
                                 <Gift size={16} color="#f59e0b" />
-                                <Text style={styles.coinsText}>{item.coinsUsed} Coins</Text>
+                                <Text style={styles.coinsText}>{coinsPaid} Coins</Text>
                             </View>
                         </View>
                     </View>

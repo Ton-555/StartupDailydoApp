@@ -17,8 +17,8 @@ export const ThemeProvider = ({ children }) => {
             text: isDarkMode ? '#f4f4f5' : '#18181b',
             subText: isDarkMode ? '#a1a1aa' : '#71717a',
             border: isDarkMode ? '#3f3f46' : '#e4e4e7',
-            primary: '#18181b',
-            secondary: '#e4e4e7',
+            primary: isDarkMode ? '#f4f4f5' : '#18181b',
+            secondary: isDarkMode ? '#3f3f46' : '#e4e4e7',
             accent: '#9333ea', // purple
         },
         toggleTheme,

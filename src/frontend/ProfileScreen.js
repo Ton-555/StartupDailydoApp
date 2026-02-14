@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { LogOut, User, Plus, MapPin, CreditCard, Settings, ChevronRight } from 'lucide-react-native';
+import { LogOut, User, Plus, MapPin, CreditCard, Settings, ChevronRight, Crown } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
 import { useTheme } from './context/ThemeContext';
@@ -28,6 +28,17 @@ const ProfileScreen = ({ user, onLogout, navigate }) => {
           </View>
           <Text style={[styles.name, { color: colors.text }]}>{user.fullName}</Text>
           <Text style={[styles.email, { color: colors.subText }]}>{user.email}</Text>
+
+          {/* Subscription Badge */}
+          {user.package_end && new Date(user.package_end) > new Date() && (
+            <View style={[styles.subBadge, { backgroundColor: isDarkMode ? '#451a03' : '#fffbeb', borderColor: isDarkMode ? '#78350f' : '#fef3c7' }]}>
+              <Crown size={14} color="#f59e0b" style={{ marginRight: 6 }} />
+              <Text style={[styles.subTextBadge, { color: isDarkMode ? '#fde68a' : '#b45309' }]}>
+                {user.package_id === 1 ? 'Standard' : (user.package_id === 2 ? 'Premium' : 'Platinum')} Plan
+              </Text>
+            </View>
+          )}
+
           <View style={styles.topUpButton}>
             <MinimalButton fullWidth variant="primary" icon={Plus} onClick={() => navigate('topup')}>Top Up Coins</MinimalButton>
           </View>
@@ -108,9 +119,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   topUpButton: {
-    marginTop: 24,
+    marginTop: 16,
     width: '100%',
     maxWidth: 320,
+  },
+  subBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 100,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#fef3c7',
+  },
+  subTextBadge: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#b45309',
   },
   menuContainer: {
     paddingHorizontal: 16,

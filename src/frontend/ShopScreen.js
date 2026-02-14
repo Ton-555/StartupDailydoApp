@@ -40,10 +40,10 @@ const ShopScreen = ({ onSelectProduct }) => {
   }, []);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Redeem Shop" />
-      <View style={[styles.tabContainer, { backgroundColor: isDarkMode ? 'rgba(24, 24, 27, 0.95)' : 'rgba(250, 250, 250, 0.95)' }]}> 
-        <View style={[styles.tabsWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}> 
+      <View style={[styles.tabContainer, { backgroundColor: isDarkMode ? 'rgba(24, 24, 27, 0.95)' : 'rgba(250, 250, 250, 0.95)' }]}>
+        <View style={[styles.tabsWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <TouchableOpacity
             onPress={() => setCategory('consumer')}
             style={[styles.tab, category === 'consumer' ? (isDarkMode ? styles.tabActiveDark : styles.tabActive) : styles.tabInactive]}
@@ -78,7 +78,7 @@ const ShopScreen = ({ onSelectProduct }) => {
                 style={[styles.productCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               >
                 <View style={styles.productInfo}>
-                  <View style={[styles.productIconContainer, { backgroundColor: isDarkMode ? colors.background : '#fafafa', overflow: 'hidden' }]}> 
+                  <View style={[styles.productIconContainer, { backgroundColor: isDarkMode ? colors.background : '#fafafa', overflow: 'hidden' }]}>
                     {item.image_uri ? (
                       <Image source={{ uri: item.image_uri }} style={styles.productImage} />
                     ) : (
@@ -89,12 +89,12 @@ const ShopScreen = ({ onSelectProduct }) => {
                     <Text style={[styles.productName, { color: colors.text }]}>{item.name}</Text>
                     <View style={styles.priceRow}>
                       <Gift size={14} color="#f59e0b" />
-                      <Text style={styles.priceText}>{typeof item.price_coin === 'number' ? item.price_coin.toLocaleString() : '-' } Coins</Text>
+                      <Text style={styles.priceText}>{typeof item.price_coin === 'number' ? item.price_coin.toLocaleString() : '-'} Coins</Text>
                     </View>
                   </View>
                 </View>
-                <View style={[styles.redeemButton, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b' }]}> 
-                  <Text style={styles.redeemText}>Redeem</Text>
+                <View style={[styles.redeemButton, { backgroundColor: isDarkMode ? '#575656ff' : '#000000ff' }]}>
+                  <Text style={[styles.redeemText, { color: isDarkMode ? '#ffffffff' : '#ffffffff' }]}>Redeem</Text>
                 </View>
               </TouchableOpacity>
             ))
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabActiveDark: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#515151ff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     color: '#86868b',
   },
   tabTextInactiveDark: {
-    color: '#1d1d1f',
+    color: '#c9c7c7ff',
   },
   productList: {
     padding: 16,

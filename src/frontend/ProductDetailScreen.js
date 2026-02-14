@@ -38,7 +38,7 @@ const ProductDetailScreen = ({ product, navigate }) => {
 
                 <View style={styles.buttonContainer}>
                     <MinimalButton fullWidth onClick={() => navigate('productCheckout')}>
-                        Redeem Now <ArrowRight size={18} color="white" />
+                        Redeem Now 
                     </MinimalButton>
                 </View>
             </ScrollView>
