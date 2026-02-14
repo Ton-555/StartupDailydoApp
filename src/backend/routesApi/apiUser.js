@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const supabase = require('../supabase');
@@ -157,5 +156,106 @@ router.put('/:id', async (req, res) => {
         return sendError(res, err);
     }
 });
+
+// =================================
+// BUY PACKAGE
+// POST /users/:id/buy-package
+// body: { package_id }
+// =================================
+router.post('/:id/buy-package', async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const { package_id } = req.body;
+
+        if (!userId || !package_id) {
+            return sendError(res, 'Missing user id or package id', 400);
+        }
+
+        // 1️⃣ ดึง user
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('users_id', userId)
+            .single();
+
+        if (userError || !user) {
+            return sendError(res, 'User not found', 404);
+        }
+
+        // --- NEW: Active Subscription Check ---
+        if (user.package_end) {
+            const currentEndDate = new Date(user.package_end);
+            if (currentEndDate > new Date()) {
+                return sendError(res, 'You already have an active subscription.', 400);
+            }
+        }
+        // --------------------------------------
+
+        // 2️⃣ ดึง package
+        const { data: pkg, error: pkgError } = await supabase
+            .from('packages')
+            .select('*')
+            .eq('package_id', package_id)
+            .single();
+
+        if (pkgError || !pkg) {
+            return sendError(res, 'Package not found', 404);
+        }
+
+        // 3️⃣ เช็ค coin
+        if (user.coin_balance < pkg.price) {
+            return sendError(res, 'Not enough coin', 400);
+        }
+
+        // 4️⃣ คำนวณวันเริ่ม / วันหมด
+        const now = new Date();
+        const endDate = new Date();
+        endDate.setDate(now.getDate() + pkg.duration_days);
+
+        // 5️⃣ อัปเดต user
+        const { data: updatedUser, error: updateError } = await supabase
+            .from('users')
+            .update({
+                coin_balance: user.coin_balance - pkg.price,
+                package_id: pkg.package_id,
+                package_start: now,
+                package_end: endDate
+            })
+            .eq('users_id', userId)
+            .select()
+            .single();
+
+        if (updateError) throw updateError;
+
+        // 6️⃣ บันทึกลง orders/logs
+        const { error: logError } = await supabase
+            .from('orders')
+            .insert([
+                {
+                    user_id: userId,
+                    total_coin: pkg.price,
+                    products_id: pkg.package_id,
+                    created_at: now
+                }
+            ]);
+
+        if (logError) {
+            console.error('Error logging package purchase:', logError);
+            // We don't necessarily want to fail the whole request if logging fails after the update, 
+            // but for debugging it's good to know.
+        }
+
+        return sendSuccess(res, {
+            message: 'Package purchased successfully',
+            user: updatedUser
+        });
+
+    } catch (err) {
+        return sendError(res, err);
+    }
+});
+
+
+
 
 module.exports = router;

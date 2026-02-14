@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Crown, Check } from 'lucide-react-native';
 import Header from './components/Header';
 import { useTheme } from './context/ThemeContext';
@@ -7,21 +7,62 @@ import { useTheme } from './context/ThemeContext';
 const PackageScreen = ({ navigate, onSelectPackage, user }) => {
     const { isDarkMode, colors } = useTheme();
     const [hasActiveSub, setHasActiveSub] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
+    const [packages, setPackages] = React.useState([]);
 
     React.useEffect(() => {
+        fetchPackages();
         if (user?.users_id) {
             checkSubscription();
         }
     }, [user]);
 
-    const checkSubscription = async () => {
+    const fetchPackages = async () => {
         try {
             const API_BASE = 'http://10.0.2.2:3000';
-            const res = await fetch(`${API_BASE}/payment/check-subscription/${user.users_id}`);
+            const res = await fetch(`${API_BASE}/package/all`);
             const json = await res.json();
-            if (json.success && json.hasActivePackage) {
-                setHasActiveSub(true);
+            if (json.success) {
+                console.log('[PackageScreen] Raw packages:', json.data);
+                const mapped = json.data.map(p => ({
+                    id: p.package_id,
+                    packageId: p.package_id,
+                    name: p.package_name || 'Unnamed Plan',
+                    price: `฿${p.price || 0}/mo`,
+                    priceSatang: (p.price || 0) * 100,
+                    coin: p.coin || 0,
+                    color: p.package_id === 1 ? '#f4f4f5' : (p.package_id === 2 ? '#e2e8f0' : '#fef9c3'),
+                    textColor: p.package_id === 1 ? '#18181b' : (p.package_id === 2 ? '#1e293b' : '#854d0e'),
+                    features: [p.description_1, p.description_2, p.description_3, p.description_4].filter(Boolean),
+                    isPopular: p.package_id === 3,
+                    icon: p.package_id === 3 ? Crown : null
+                }));
+                setPackages(mapped);
+            }
+        } catch (error) {
+            console.error('Error fetching packages:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const checkSubscription = async () => {
+        if (!user || !user.users_id) {
+            console.log('[PackageScreen] No user ID available for check');
+            return;
+        }
+        try {
+            // We can check user.package_end directly if it's passed in props, 
+            // but fetching ensures the latest state.
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/users/id/${user.users_id}`);
+            const json = await res.json();
+
+            if (json.success && json.data && json.data.package_end) {
+                const endDate = new Date(json.data.package_end);
+                if (endDate > new Date()) {
+                    setHasActiveSub(true);
+                }
             }
         } catch (error) {
             console.error('Error checking sub in PackageScreen:', error);
@@ -39,6 +80,7 @@ const PackageScreen = ({ navigate, onSelectPackage, user }) => {
         onSelectPackage({
             type: 'package',
             name: pkg.name + ' Plan',
+            packageId: pkg.packageId,
             price: pkg.priceSatang > 0 ? `฿${pkg.priceSatang / 100}` : 'Free',
             priceSatang: pkg.priceSatang,
             coin: pkg.coin,
@@ -46,11 +88,7 @@ const PackageScreen = ({ navigate, onSelectPackage, user }) => {
         });
     };
 
-    const packages = [
-        { id: 1, name: 'Standard', price: '฿500/mo', priceSatang: 50000, coin: 1000, color: '#f4f4f5', textColor: '#18181b', features: ['Basic rewards', '1000 Coins/month', 'Standard Support'], icon: null },
-        { id: 2, name: 'Premium', price: '฿1000/mo', priceSatang: 100000, coin: 2200, color: '#e2e8f0', textColor: '#1e293b', features: ['1.5x Coin Multiplier', '2200 Coins/month', 'Priority Support', 'No Ads'], icon: null },
-        { id: 3, name: 'Platinum', price: '฿1500/mo', priceSatang: 150000, coin: 3400, color: '#fef9c3', textColor: '#854d0e', icon: Crown, features: ['3x Coin Multiplier', '3400 Coins/month', 'VIP Access', 'Exclusive Deals', 'Free Shipping'], isPopular: true }
-    ];
+    if (loading) return <View style={styles.center}><Text>Loading...</Text></View>;
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Packages" onBack={() => navigate('home')} />
@@ -93,7 +131,7 @@ const PackageScreen = ({ navigate, onSelectPackage, user }) => {
                             ))}
                         </View>
                         <TouchableOpacity
-                            onPress={() => onSelectPackage({ type: 'package', name: pkg.name + ' Plan', price: pkg.priceSatang > 0 ? `฿${pkg.priceSatang / 100}` : 'Free', priceSatang: pkg.priceSatang, coin: pkg.coin, detail: 'Monthly Subscription' })}
+                            onPress={() => handleSelect(pkg)}
                             style={[
                                 styles.button,
                                 pkg.isPopular ? styles.buttonPopular : [styles.buttonRegular, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b' }]
@@ -231,6 +269,11 @@ const styles = StyleSheet.create({
     },
     textRegular: {
         color: '#ffffff',
+    },
+    center: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 });
 

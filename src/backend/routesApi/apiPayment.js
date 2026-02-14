@@ -177,7 +177,7 @@ router.post('/checkout', async (req, res) => {
 
 router.post('/savelog', async (req, res) => {
     try {
-        const { users_id, amount, type, detail } = req.body;
+        const { users_id, amount, type, detail, packageId } = req.body;
 
         if (!users_id) return res.status(400).json({ success: false, message: 'Missing users_id' });
 
@@ -189,7 +189,7 @@ router.post('/savelog', async (req, res) => {
             .from('orders')
             .select('*')
             .eq('user_id', users_id)
-            .eq('detail', detail || `Payment for ${type}`)
+            .eq('products_id', packageId || null)
             .gte('created_at', tenSecondsAgo.toISOString())
             .limit(1);
 
@@ -198,7 +198,27 @@ router.post('/savelog', async (req, res) => {
             return res.json({ success: true, message: 'Duplicate log suppressed', data: existing[0] });
         }
 
-        // Reward coins for both 'coin' top-ups and 'package' subscriptions
+        // --- ENFORCEMENT: Active Subscription Check ---
+        if (type === 'package') {
+            const { data: user, error: userError } = await supabase
+                .from('users')
+                .select('package_end')
+                .eq('users_id', users_id)
+                .single();
+
+            if (userError) throw userError;
+
+            if (user.package_end && new Date(user.package_end) > new Date()) {
+                console.log(`[Savelog] Blocked: User ${users_id} has an active package until ${user.package_end}`);
+                return res.status(403).json({
+                    success: false,
+                    message: 'You already have an active subscription.'
+                });
+            }
+        }
+        // ----------------------------------------------
+
+        // Reward coins and update package info
         if (type === 'coin' || type === 'package') {
             const { data: user, error: fetchError } = await supabase
                 .from('users')
@@ -211,9 +231,28 @@ router.post('/savelog', async (req, res) => {
             const increment = parseInt(amount);
             const newBalance = (user.coin_balance || 0) + increment;
 
+            let updatePayload = { coin_balance: newBalance };
+
+            if (type === 'package') {
+                // Fetch package duration
+                const { data: pkg } = await supabase
+                    .from('packages')
+                    .select('duration_days')
+                    .eq('package_id', packageId)
+                    .single();
+
+                const now = new Date();
+                const endDate = new Date();
+                endDate.setDate(now.getDate() + (pkg?.duration_days || 30));
+
+                updatePayload.package_id = packageId;
+                updatePayload.package_start = now;
+                updatePayload.package_end = endDate;
+            }
+
             const { error: updateError } = await supabase
                 .from('users')
-                .update({ coin_balance: newBalance })
+                .update(updatePayload)
                 .eq('users_id', users_id);
 
             if (updateError) throw updateError;
@@ -226,9 +265,8 @@ router.post('/savelog', async (req, res) => {
                 {
                     user_id: users_id,
                     total_coin: type === 'coin' ? 0 : parseInt(amount),
-                    quantity: 1,
-                    detail: detail || `Payment for ${type}`,
-                    status: 'completed' // Assume completed if log is saved
+                    products_id: type === 'package' ? packageId : null,
+                    created_at: new Date()
                 }
             ])
             .select();
@@ -238,33 +276,6 @@ router.post('/savelog', async (req, res) => {
         res.json({ success: true, message: 'Log saved successfully', data: data[0] });
     } catch (error) {
         console.error('Error saving log:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-router.get('/check-subscription/:userId', async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        // Check for package orders in the last 30 days
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('user_id', userId)
-            .ilike('detail', '%Plan%') // Packages are named "Standard Plan", etc.
-            .gte('created_at', thirtyDaysAgo.toISOString());
-
-        if (error) throw error;
-
-        res.json({
-            success: true,
-            hasActivePackage: data.length > 0,
-            activePackage: data.length > 0 ? data[0] : null
-        });
-    } catch (error) {
-        console.error('Error checking subscription:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
