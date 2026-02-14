@@ -113,12 +113,9 @@ const useAppLogic = () => {
                             : (userData.first_name || userData.username || prev.username),
                         coins: Number(userData.coin_balance ?? prev.coins),
                         email: userData.email || prev.email,
-                        phone: userData.phone || prev.phone,
-                        package_id: userData.package_id,
-                        package_start: userData.package_start,
-                        package_end: userData.package_end
+                        phone: userData.phone || prev.phone
                     };
-                    console.log(`[refreshUser] State updated. New coins: ${updated.coins}, package: ${updated.package_id}`);
+                    console.log(`[refreshUser] State updated. New coins: ${updated.coins}`);
                     return updated;
                 });
             } else {
