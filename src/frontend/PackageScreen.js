@@ -4,12 +4,52 @@ import { Crown, Check } from 'lucide-react-native';
 import Header from './components/Header';
 import { useTheme } from './context/ThemeContext';
 
-const PackageScreen = ({ navigate, onSelectPackage }) => {
+const PackageScreen = ({ navigate, onSelectPackage, user }) => {
     const { isDarkMode, colors } = useTheme();
+    const [hasActiveSub, setHasActiveSub] = React.useState(false);
+    const [loading, setLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        if (user?.users_id) {
+            checkSubscription();
+        }
+    }, [user]);
+
+    const checkSubscription = async () => {
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/payment/check-subscription/${user.users_id}`);
+            const json = await res.json();
+            if (json.success && json.hasActivePackage) {
+                setHasActiveSub(true);
+            }
+        } catch (error) {
+            console.error('Error checking sub in PackageScreen:', error);
+        }
+    };
+
+    const handleSelect = (pkg) => {
+        if (hasActiveSub) {
+            Alert.alert(
+                'Already Subscribed',
+                'You already have an active subscription. You can only subscribe to one package per month.'
+            );
+            return;
+        }
+        onSelectPackage({
+            type: 'package',
+            name: pkg.name + ' Plan',
+            price: pkg.priceSatang > 0 ? `฿${pkg.priceSatang / 100}` : 'Free',
+            priceSatang: pkg.priceSatang,
+            coin: pkg.coin,
+            detail: 'Monthly Subscription'
+        });
+    };
+
     const packages = [
-        { id: 1, name: 'Standard', price: '฿500/mo', priceSatang: 50000, coin: 1000, color: '#f4f4f5', textColor: '#18181b', features: ['Basic rewards', '2200 Coins/month', 'Standard Support'], icon: null },
-        { id: 2, name: 'Premium', price: '฿1000/mo', priceSatang: 100000, coin: 2200, color: '#e2e8f0', textColor: '#1e293b', features: ['2x Coin Multiplier', '3400 Coins/month', 'Priority Support', 'No Ads'], icon: null },
-        { id: 3, name: 'Platinum', price: '฿1500/mo', priceSatang: 150000, coin: 3400, color: '#fef9c3', textColor: '#854d0e', icon: Crown, features: ['5x Coin Multiplier', '4800 Coins/month', 'VIP Access', 'Exclusive Deals', 'Free Shipping'], isPopular: true }
+        { id: 1, name: 'Standard', price: '฿500/mo', priceSatang: 50000, coin: 1000, color: '#f4f4f5', textColor: '#18181b', features: ['Basic rewards', '1000 Coins/month', 'Standard Support'], icon: null },
+        { id: 2, name: 'Premium', price: '฿1000/mo', priceSatang: 100000, coin: 2200, color: '#e2e8f0', textColor: '#1e293b', features: ['1.5x Coin Multiplier', '2200 Coins/month', 'Priority Support', 'No Ads'], icon: null },
+        { id: 3, name: 'Platinum', price: '฿1500/mo', priceSatang: 150000, coin: 3400, color: '#fef9c3', textColor: '#854d0e', icon: Crown, features: ['3x Coin Multiplier', '3400 Coins/month', 'VIP Access', 'Exclusive Deals', 'Free Shipping'], isPopular: true }
     ];
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { CreditCard as DebitCard, Check } from 'lucide-react-native';
 import Header from './components/Header';
@@ -10,10 +10,41 @@ const PaymentScreen = ({ navigate, item, user, cards, onRefreshUser }) => {
   const [method, setMethod] = useState('card');
   const [selectedCardId, setSelectedCardId] = useState(cards && cards.length > 0 ? cards[0].id : null);
   const [loading, setLoading] = useState(false);
+  const [hasActiveSub, setHasActiveSub] = useState(false);
+
+  useEffect(() => {
+    if (item && item.type === 'package' && user?.users_id) {
+      checkSubscriptionStatus();
+    }
+  }, [item, user]);
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const API_BASE = 'http://10.0.2.2:3000';
+      const res = await fetch(`${API_BASE}/payment/check-subscription/${user.users_id}`);
+      const json = await res.json();
+      if (json.success && json.hasActivePackage) {
+        setHasActiveSub(true);
+        Alert.alert(
+          'Active Subscription Found',
+          'You already have an active subscription. You can only subscribe once per month.'
+        );
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  };
 
   if (!item) return <View style={styles.center}><Text>No item selected</Text></View>;
 
   const handleConfirmPayment = async () => {
+    if (loading) return;
+
+    if (item.type === 'package' && hasActiveSub) {
+      Alert.alert('Error', 'You already have an active subscription for this month.');
+      return;
+    }
+
     if (!selectedCardId) {
       Alert.alert('Error', 'Please select a credit card');
       return;
@@ -41,9 +72,9 @@ const PaymentScreen = ({ navigate, item, user, cards, onRefreshUser }) => {
         body: JSON.stringify({
           name: card.cardHolder,
           number: card.cardNumber,
-          expiryDate: card.expiryDate, // Should be YYYY-MM-DD or MM/YY? 
+          expiryDate: card.expiryDate, // Should be YYYY-MM-DD or MM/YY?
           // Wait, apiPayment.js expects MM/YY in line 110: expiryDate.split('/')
-          // But our database stores YYYY-MM-DD. 
+          // But our database stores YYYY-MM-DD.
           // I need to format it for apiPayment.js or fix apiPayment.js.
           // Let's fix apiPayment.js to handle YYYY-MM-DD or MM/YY.
           cvc: card.cvv,
@@ -55,12 +86,16 @@ const PaymentScreen = ({ navigate, item, user, cards, onRefreshUser }) => {
 
       if (checkoutJson.success) {
         // 2. /savelog
+        const rewardAmount = item.type === 'coin'
+          ? parseInt(item.name)
+          : (item.coin || 0);
+
         const logRes = await fetch(`${API_BASE}/payment/savelog`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             users_id: user.users_id,
-            amount: item.type === 'coin' ? parseInt(item.name) : amountBaht,
+            amount: rewardAmount,
             type: item.type,
             detail: item.name
           })

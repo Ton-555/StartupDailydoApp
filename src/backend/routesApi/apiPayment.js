@@ -181,8 +181,25 @@ router.post('/savelog', async (req, res) => {
 
         if (!users_id) return res.status(400).json({ success: false, message: 'Missing users_id' });
 
-        if (type === 'coin') {
-            // Top up coins
+        // Basic Deduplication: Check if a similar log was created in the last 10 seconds
+        const tenSecondsAgo = new Date();
+        tenSecondsAgo.setSeconds(tenSecondsAgo.getSeconds() - 10);
+
+        const { data: existing, error: checkError } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', users_id)
+            .eq('detail', detail || `Payment for ${type}`)
+            .gte('created_at', tenSecondsAgo.toISOString())
+            .limit(1);
+
+        if (existing && existing.length > 0) {
+            console.log('[Savelog] Duplicate request detected, skipping processing.');
+            return res.json({ success: true, message: 'Duplicate log suppressed', data: existing[0] });
+        }
+
+        // Reward coins for both 'coin' top-ups and 'package' subscriptions
+        if (type === 'coin' || type === 'package') {
             const { data: user, error: fetchError } = await supabase
                 .from('users')
                 .select('coin_balance')
@@ -202,15 +219,16 @@ router.post('/savelog', async (req, res) => {
             if (updateError) throw updateError;
         }
 
-        // Record in orders/logs if needed (implementing basic log for now)
+        // Record in orders
         const { data, error } = await supabase
             .from('orders')
             .insert([
                 {
                     user_id: users_id,
-                    total_coin: type === 'coin' ? 0 : parseInt(amount), // if it's a topup, total_coin in orders might be 0 as it's a real money payment
+                    total_coin: type === 'coin' ? 0 : parseInt(amount),
                     quantity: 1,
-                    detail: detail || `Payment for ${type}`
+                    detail: detail || `Payment for ${type}`,
+                    status: 'completed' // Assume completed if log is saved
                 }
             ])
             .select();
@@ -220,6 +238,33 @@ router.post('/savelog', async (req, res) => {
         res.json({ success: true, message: 'Log saved successfully', data: data[0] });
     } catch (error) {
         console.error('Error saving log:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.get('/check-subscription/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        // Check for package orders in the last 30 days
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', userId)
+            .ilike('detail', '%Plan%') // Packages are named "Standard Plan", etc.
+            .gte('created_at', thirtyDaysAgo.toISOString());
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            hasActivePackage: data.length > 0,
+            activePackage: data.length > 0 ? data[0] : null
+        });
+    } catch (error) {
+        console.error('Error checking subscription:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });

@@ -2,26 +2,27 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
-const MinimalButton = ({ children, onClick, variant = 'primary', className = '', icon: Icon, fullWidth = false, disabled = false }) => {
+const MinimalButton = ({ children, onClick, variant = 'primary', className = '', icon: Icon, fullWidth = false, disabled = false, loading = false }) => {
     const { isDarkMode, colors } = useTheme();
     const isPrimary = variant === 'primary';
+    const isDisabled = disabled || loading;
 
     return (
         <TouchableOpacity
             onPress={onClick}
-            disabled={disabled}
+            disabled={isDisabled}
             style={[
                 styles.base,
                 fullWidth && styles.fullWidth,
                 isPrimary
                     ? [styles.primary, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b', shadowColor: isDarkMode ? '#000' : '#e4e4e7' }]
                     : [styles.secondary, { backgroundColor: isDarkMode ? '#27272a' : '#f4f4f5' }],
-                disabled && styles.disabled,
+                isDisabled && styles.disabled,
             ]}
         >
-            {Icon && <Icon size={18} color={isPrimary ? '#FFF' : colors.text} style={{ marginRight: 8 }} />}
+            {Icon && !loading && <Icon size={18} color={isPrimary ? '#FFF' : colors.text} style={{ marginRight: 8 }} />}
             <Text style={[styles.text, isPrimary ? styles.textPrimary : { color: colors.text }]}>
-                {children}
+                {loading ? 'Processing...' : children}
             </Text>
         </TouchableOpacity>
     );

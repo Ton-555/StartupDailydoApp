@@ -325,7 +325,7 @@ const AppContent = () => {
             case 'register': return <RegisterScreen onRegister={register} onNavigateLogin={() => navigate('login')} />;
             case 'onboarding': return <OnboardingScreen onComplete={handleOnboardingComplete} />;
             case 'home': return <HomeScreen user={user} navigate={navigate} onRefreshUser={refreshUser} />;
-            case 'package': return <PackageScreen navigate={navigate} onSelectPackage={handleSelectPurchase} />;
+            case 'package': return <PackageScreen navigate={navigate} onSelectPackage={handleSelectPurchase} user={user} />;
             case 'topup': return <TopUpScreen navigate={navigate} onSelectPackage={handleSelectPurchase} onRefreshUser={refreshUser} />;
             case 'payment': return <PaymentScreen navigate={navigate} item={selectedPurchase} user={user} onRefreshUser={refreshUser} cards={cards} />;
             case 'shop': return <ShopScreen onSelectProduct={handleSelectProduct} />;
