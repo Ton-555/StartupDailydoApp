@@ -4,7 +4,7 @@ import { User, Mail, Phone, CreditCard, Calendar } from 'lucide-react-native';
 import Header from './components/Header';
 import { useTheme } from './context/ThemeContext';
 
-const SettingsScreen = ({ user, navigate }) => {
+const SettingsScreen = ({ user, navigate, onRefreshUser }) => {
     const { isDarkMode, colors } = useTheme();
     const [editing, setEditing] = useState(false);
     const [showModal, setShowModal] = useState(false);

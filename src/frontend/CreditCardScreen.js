@@ -16,11 +16,40 @@ const CreditCardScreen = ({ cards, onAddCard, onDeleteCard, navigate }) => {
         cvv: ''
     });
 
+    const handleExpiryDateChange = (text) => {
+        // Remove all non-digits
+        let cleaned = text.replace(/\D/g, '');
+
+        let formatted = '';
+        if (cleaned.length > 0) {
+            // YYYY
+            formatted = cleaned.slice(0, 4);
+            if (cleaned.length > 4) {
+                // YYYY-MM
+                formatted += '-' + cleaned.slice(4, 6);
+                if (cleaned.length > 6) {
+                    // YYYY-MM-DD
+                    formatted += '-' + cleaned.slice(6, 8);
+                }
+            }
+        }
+
+        setNewCard({ ...newCard, expiryDate: formatted });
+    };
+
     const handleSave = () => {
         if (!newCard.cardNumber || !newCard.cardHolder || !newCard.expiryDate || !newCard.cvv) {
             Alert.alert('Validation Error', 'Please fill in required fields');
             return;
         }
+
+        // Basic YYYY-MM-DD validation
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(newCard.expiryDate)) {
+            Alert.alert('Validation Error', 'Invalid date format. Use YYYY-MM-DD');
+            return;
+        }
+
         // Mask card number for display
         const last4 = newCard.cardNumber.slice(-4);
         onAddCard({ ...newCard, id: Date.now().toString(), last4 });
@@ -85,9 +114,10 @@ const CreditCardScreen = ({ cards, onAddCard, onDeleteCard, navigate }) => {
                             <View style={{ flex: 1, marginRight: 8 }}>
                                 <MinimalInput
                                     label="Expiry Date"
-                                    placeholder="MM/YY"
+                                    placeholder="YYYY-MM-DD"
                                     value={newCard.expiryDate}
-                                    onChange={(text) => setNewCard({ ...newCard, expiryDate: text })}
+                                    onChange={handleExpiryDateChange}
+                                    keyboardType="numeric"
                                 />
                             </View>
                             <View style={{ flex: 1, marginLeft: 8 }}>

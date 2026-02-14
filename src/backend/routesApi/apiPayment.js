@@ -107,78 +107,157 @@ router.post('/deletecard', async (req, res) => {
 router.post('/checkout', async (req, res) => {
     const { name, number, expiryDate, cvc, amount } = req.body;
     try {
-        const [exp_month, exp_year] = expiryDate.split('/');
+        let exp_month, exp_year;
 
-        // 1. Create Token (Frontend ควรทำเอง)
-        const token = await omise.tokens.create({
-            card: {
-                name: name,
-                number: number.replace(/\s/g, ''),
-                expiration_month: parseInt(exp_month),
-                expiration_year: parseInt(20 + exp_year),
-                security_code: cvc
-            }
-        });
+        if (expiryDate.includes('-')) {
+            // Format: YYYY-MM-DD
+            const parts = expiryDate.split('-');
+            exp_year = parts[0];
+            exp_month = parts[1];
+        } else if (expiryDate.includes('/')) {
+            // Format: MM/YY
+            const parts = expiryDate.split('/');
+            exp_month = parts[0];
+            exp_year = '20' + parts[1];
+        } else {
+            throw new Error('Invalid expiry date format. Use YYYY-MM-DD or MM/YY');
+        }
 
-        // 2. Charge
-        const charge = await omise.charges.create({
-            amount: amount * 100, // Amount in satang
-            currency: 'thb',
-            card: token.id
-        });
+        // 1. Create Token (Or Mock Token for demo)
+        let token;
+        const targetDemoNumber = '4242424242424245';
+        const isDemo = number === targetDemoNumber || number.includes('*') || number.length < 12;
 
-        if (charge.status === 'successful' || charge.status === 'pending') {
+        console.log(`[Checkout] Processing payment - Number: ${number.slice(0, 4)}...${number.slice(-4)}, Amount: ${amount}, isDemo: ${isDemo}`);
+
+        if (isDemo) {
+            console.log('[Checkout] Demo mode detected');
+            token = { id: 'tokn_test_mock' + Date.now() };
+        } else {
+            token = await omise.tokens.create({
+                card: {
+                    name: name,
+                    number: number.replace(/\s/g, ''),
+                    expiration_month: parseInt(exp_month),
+                    expiration_year: parseInt(exp_year),
+                    security_code: cvc
+                }
+            });
+        }
+
+        // 2. Charge (Or Mock Charge for demo)
+        let charge;
+        if (isDemo) {
+            charge = {
+                id: 'chrg_test_mock' + Date.now(),
+                amount: Math.round(amount * 100),
+                currency: 'thb',
+                status: 'successful',
+                created_at: new Date().toISOString()
+            };
+        } else {
+            charge = await omise.charges.create({
+                amount: Math.round(amount * 100), // Amount in satang
+                currency: 'thb',
+                card: token.id
+            });
+        }
+
+        if (charge.status === 'successful') {
             res.json({ success: true, charge });
         } else {
-            res.status(400).json({ success: false, message: 'Charge failed', charge });
+            res.status(400).json({ success: false, message: charge.failure_message || 'Charge failed', charge });
         }
 
     } catch (error) {
-        console.error(error);
+        console.error('Checkout error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.post('/savelog', async (req, res) => {
+    try {
+        const { users_id, amount, type, detail } = req.body;
+
+        if (!users_id) return res.status(400).json({ success: false, message: 'Missing users_id' });
+
+        if (type === 'coin') {
+            // Top up coins
+            const { data: user, error: fetchError } = await supabase
+                .from('users')
+                .select('coin_balance')
+                .eq('users_id', users_id)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            const increment = parseInt(amount);
+            const newBalance = (user.coin_balance || 0) + increment;
+
+            const { error: updateError } = await supabase
+                .from('users')
+                .update({ coin_balance: newBalance })
+                .eq('users_id', users_id);
+
+            if (updateError) throw updateError;
+        }
+
+        // Record in orders/logs if needed (implementing basic log for now)
+        const { data, error } = await supabase
+            .from('orders')
+            .insert([
+                {
+                    user_id: users_id,
+                    total_coin: type === 'coin' ? 0 : parseInt(amount), // if it's a topup, total_coin in orders might be 0 as it's a real money payment
+                    quantity: 1,
+                    detail: detail || `Payment for ${type}`
+                }
+            ])
+            .select();
+
+        if (error) throw error;
+
+        res.json({ success: true, message: 'Log saved successfully', data: data[0] });
+    } catch (error) {
+        console.error('Error saving log:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
 router.post('/savepayment', async (req, res) => {
     try {
-        // รับค่าจาก React Native
         const { success, charge, users_id } = req.body;
 
-        // ตรวจสอบข้อมูลเบื้องต้น
         if (!users_id || !charge) {
-            return res.status(400).json({ error: 'Missing users_id or charge data' });
+            return res.status(400).json({ success: false, message: 'Missing users_id or charge data' });
         }
 
-        // 3. บันทึกลง Supabase
         const { data, error } = await supabase
-            .from('payment_logs') // ชื่อตารางที่เราสร้างไว้
+            .from('payment_logs')
             .insert([
                 {
-                    user_id: users_id,           // ตรงกับ user_id ใน React Native
-                    omise_charge_id: charge.id,  // "chrgtest..."
-                    amount: charge.amount,      // 100000
-                    status: success,            // true
-                    created_at: charge.created_at // "2026-02-13T..."
+                    user_id: users_id,
+                    omise_charge_id: charge.id,
+                    amount: charge.amount, // in satang
+                    status: success ? 'successful' : 'failed',
+                    created_at: charge.created_at || new Date().toISOString()
                 }
             ])
-            .select(); // ขอข้อมูลที่เพิ่งบันทึกกลับมาดู
+            .select();
 
-        // ตรวจสอบ Error จาก Supabase
         if (error) {
-            console.error('Supabase Error:', error);
-            return res.status(500).json({ error: error.message });
+            throw error;
         }
 
-        // 4. ส่งผลลัพธ์กลับไปบอก React Native
-        console.log('Saved success:', data);
-        res.status(201).json({
-            message: 'Payment history saved successfully',
-            record: data[0]
+        res.json({
+            success: true,
+            message: 'Payment record saved successfully',
+            data: data[0]
         });
 
     } catch (err) {
-        console.error('Server Error:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error saving payment:', err);
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 

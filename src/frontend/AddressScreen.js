@@ -6,7 +6,7 @@ import MinimalInput from './components/MinimalInput';
 import MinimalButton from './components/MinimalButton';
 import { useTheme } from './context/ThemeContext';
 
-const AddressScreen = ({ addresses, onAddAddress, onUpdateAddress, navigate }) => {
+const AddressScreen = ({ addresses, onAddAddress, onUpdateAddress, onDeleteAddress, navigate }) => {
     const { isDarkMode, colors } = useTheme();
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -68,6 +68,11 @@ const AddressScreen = ({ addresses, onAddAddress, onUpdateAddress, navigate }) =
                 <TouchableOpacity onPress={() => handleEdit(item)} style={styles.iconButton}>
                     <Pencil size={18} color={colors.subText} />
                 </TouchableOpacity>
+                {onDeleteAddress && (
+                    <TouchableOpacity onPress={() => onDeleteAddress(item.id)} style={styles.iconButton}>
+                        <Trash2 size={18} color="#ef4444" />
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     );

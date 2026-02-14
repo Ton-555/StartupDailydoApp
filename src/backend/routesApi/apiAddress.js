@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../supabase');
 
-// POST /address/add-address - เพิ่ม/แก้ไขที่อยู่ (ใช้ Logic เดียวกันคือ Update)
+// POST /address/add-address - เพิ่ม/แก้ไขที่อยู่
 router.post('/add-address', async (req, res) => {
     try {
-        const { id_user, address } = req.body;
+        const { users_id, address } = req.body;
 
         const { data, error } = await supabase
             .from('users')
             .update({ address: address })
-            .eq('id_user', id_user)
+            .eq('users_id', users_id)
             .select();
 
         if (error) {
@@ -20,7 +20,7 @@ router.post('/add-address', async (req, res) => {
         res.json({
             success: true,
             message: "บันทึกที่อยู่สำเร็จ",
-            data: data
+            data: data[0]
         });
 
     } catch (error) {
@@ -29,7 +29,7 @@ router.post('/add-address', async (req, res) => {
     }
 });
 
-// POST /address/edit-address - แก้ไขที่อยู่ (ทำงานเหมือน Add)
+// POST /address/edit-address (Alias for add-address)
 router.post('/edit-address', async (req, res) => {
     try {
         const { users_id, address } = req.body;
@@ -47,7 +47,7 @@ router.post('/edit-address', async (req, res) => {
         res.json({
             success: true,
             message: "แก้ไขที่อยู่สำเร็จ",
-            data: data
+            data: data[0]
         });
 
     } catch (error) {
@@ -56,15 +56,14 @@ router.post('/edit-address', async (req, res) => {
     }
 });
 
-// POST /address/delete-address - ลบที่อยู่ (Set เป็น NULL หรือค่าว่าง)
+// POST /address/delete-address
 router.post('/delete-address', async (req, res) => {
     try {
         const { users_id } = req.body;
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('users')
-            .update({ address: "" }) // แก้จาก null เป็น "" ตาม Requirement
-            .eq('users_id', users_id)
-            .select();
+            .update({ address: "" })
+            .eq('users_id', users_id);
 
         if (error) {
             throw error;
@@ -81,15 +80,15 @@ router.post('/delete-address', async (req, res) => {
     }
 });
 
-// GET /address/get-address/:id_user - ดึงที่อยู่ของ User
-router.get('/get-address/:id_user', async (req, res) => {
+// GET /address/get-address/:users_id
+router.get('/get-address/:users_id', async (req, res) => {
     try {
-        const { id_user } = req.params;
+        const { users_id } = req.params;
 
         const { data, error } = await supabase
             .from('users')
             .select('address')
-            .eq('id_user', id_user)
+            .eq('users_id', users_id)
             .single();
 
         if (error) {

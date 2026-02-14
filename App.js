@@ -50,6 +50,7 @@ const useAppLogic = () => {
             coins: userData.coin_balance || 0
         });
         refreshCards(userData.users_id);
+        refreshAddress(userData.users_id);
         navigate('home');
     };
 
@@ -129,11 +130,98 @@ const useAppLogic = () => {
     const handleSelectHistoryItem = (item) => { setSelectedHistoryItem(item); navigate('historyDetail'); };
     const handleSelectProduct = (product) => { setSelectedProduct(product); navigate('productDetail'); };
 
-    const handleAddAddress = (address) => setAddresses([...addresses, address]);
-    const handleUpdateAddress = (updatedAddress) => {
-        setAddresses(addresses.map(addr => addr.id === updatedAddress.id ? updatedAddress : addr));
+    const refreshAddress = async (userId = user?.users_id) => {
+        if (!userId) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/address/get-address/${userId}`);
+            const json = await res.json();
+            if (json.success && json.address) {
+                // If the user wants plain text, we store it as a single address object in the array
+                // where the houseNo holds the full text for display, or we try to keep the structure.
+                // However, the user asked to SAVE as text. 
+                // Let's assume the UI still wants the fields if possible, but if it comes back as one string, 
+                // we'll put it in houseNo.
+                setAddresses([{
+                    id: '1',
+                    name: 'Saved Address',
+                    houseNo: json.address,
+                    city: '',
+                    street: '',
+                    zip: ''
+                }]);
+            } else {
+                setAddresses([]);
+            }
+        } catch (err) {
+            console.error('Error fetching address:', err);
+        }
     };
-    const handleDeleteAddress = (id) => setAddresses(addresses.filter(addr => addr.id !== id));
+
+    const handleAddAddress = async (addressObj) => {
+        if (!user || !user.users_id) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            // Format object to plain text string: "123/45 Sukhumvit Road, Bangkok, 10110"
+            const addressString = `${addressObj.houseNo} ${addressObj.street}, ${addressObj.city}, ${addressObj.zip}`.trim();
+
+            const res = await fetch(`${API_BASE}/address/add-address`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    users_id: user.users_id,
+                    address: addressString
+                })
+            });
+            const json = await res.json();
+            if (json.success) {
+                refreshAddress();
+            }
+        } catch (err) {
+            console.error('Error adding address:', err);
+        }
+    };
+
+    const handleUpdateAddress = async (updatedAddressObj) => {
+        if (!user || !user.users_id) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const addressString = `${updatedAddressObj.houseNo} ${updatedAddressObj.street}, ${updatedAddressObj.city}, ${updatedAddressObj.zip}`.trim();
+
+            const res = await fetch(`${API_BASE}/address/edit-address`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    users_id: user.users_id,
+                    address: addressString
+                })
+            });
+            const json = await res.json();
+            if (json.success) {
+                refreshAddress();
+            }
+        } catch (err) {
+            console.error('Error updating address:', err);
+        }
+    };
+
+    const handleDeleteAddress = async () => {
+        if (!user || !user.users_id) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/address/delete-address`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ users_id: user.users_id })
+            });
+            const json = await res.json();
+            if (json.success) {
+                setAddresses([]);
+            }
+        } catch (err) {
+            console.error('Error deleting address:', err);
+        }
+    };
 
     const refreshCards = async (userId = user?.users_id) => {
         if (!userId) return;
@@ -239,14 +327,14 @@ const AppContent = () => {
             case 'home': return <HomeScreen user={user} navigate={navigate} onRefreshUser={refreshUser} />;
             case 'package': return <PackageScreen navigate={navigate} onSelectPackage={handleSelectPurchase} />;
             case 'topup': return <TopUpScreen navigate={navigate} onSelectPackage={handleSelectPurchase} onRefreshUser={refreshUser} />;
-            case 'payment': return <PaymentScreen navigate={navigate} item={selectedPurchase} user={user} onRefreshUser={refreshUser} />;
+            case 'payment': return <PaymentScreen navigate={navigate} item={selectedPurchase} user={user} onRefreshUser={refreshUser} cards={cards} />;
             case 'shop': return <ShopScreen onSelectProduct={handleSelectProduct} />;
             case 'productDetail': return <ProductDetailScreen product={selectedProduct} navigate={navigate} />;
             case 'productCheckout': return <ProductCheckoutScreen product={selectedProduct} navigate={navigate} user={user} onRefreshUser={refreshUser} />;
-            case 'history': return <HistoryScreen onSelectItem={handleSelectHistoryItem} />;
+            case 'history': return <HistoryScreen onSelectItem={handleSelectHistoryItem} user={user} />; // [Added] user={user} prop for fetch history // [Added] user={user} prop for fetch history
             case 'historyDetail': return <HistoryDetailScreen item={selectedHistoryItem} navigate={navigate} />;
             case 'profile': return <ProfileScreen user={user} onLogout={handleLogout} navigate={navigate} />;
-            case 'address': return <AddressScreen addresses={addresses} onAddAddress={handleAddAddress} onUpdateAddress={handleUpdateAddress} navigate={navigate} />;
+            case 'address': return <AddressScreen addresses={addresses} onAddAddress={handleAddAddress} onUpdateAddress={handleUpdateAddress} onDeleteAddress={handleDeleteAddress} navigate={navigate} />;
             case 'creditcard': return <CreditCardScreen cards={cards} onAddCard={handleAddCard} onDeleteCard={handleDeleteCard} navigate={navigate} />;
             case 'settings': return <SettingsScreen user={user} navigate={navigate} onRefreshUser={refreshUser} />;
             default: return <HomeScreen user={user} navigate={navigate} />;
