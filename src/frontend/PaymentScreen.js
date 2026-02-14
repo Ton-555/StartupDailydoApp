@@ -19,10 +19,18 @@ const PaymentScreen = ({ navigate, item, user, cards, onRefreshUser }) => {
   }, [item, user]);
 
   const checkSubscriptionStatus = async () => {
+    if (!user || !user.users_id) {
+      console.log('[PaymentScreen] No user ID for sub check');
+      return;
+    }
     try {
       const API_BASE = 'http://10.0.2.2:3000';
-      const res = await fetch(`${API_BASE}/payment/check-subscription/${user.users_id}`);
-      const json = await res.json();
+      const url = `${API_BASE}/package/check/${user.users_id}`;
+      console.log(`[PaymentScreen] Checking sub: ${url}`);
+      const res = await fetch(url);
+      const text = await res.text();
+      console.log('[PaymentScreen] Raw response:', text);
+      const json = JSON.parse(text);
       if (json.success && json.hasActivePackage) {
         setHasActiveSub(true);
         Alert.alert(
@@ -31,7 +39,7 @@ const PaymentScreen = ({ navigate, item, user, cards, onRefreshUser }) => {
         );
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('[PaymentScreen] Error checking subscription:', error);
     }
   };
 
@@ -97,7 +105,8 @@ const PaymentScreen = ({ navigate, item, user, cards, onRefreshUser }) => {
             users_id: user.users_id,
             amount: rewardAmount,
             type: item.type,
-            detail: item.name
+            detail: item.name,
+            packageId: item.packageId
           })
         });
 

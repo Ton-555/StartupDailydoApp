@@ -17,10 +17,9 @@ const addressRouter = require('./routesApi/apiAddress');
 const buyProductRouter = require('./routesApi/apiBuyProduct');
 const addCoinRouter = require('./routesApi/apiAddCoin');
 const historyRouter = require('./routesApi/apiHistory');
+const packageRouter = require('./routesApi/apiPackage');
 
 //หลังโค้ดบรรนี้ให้เรียกใช้ api
-
-// api ของ payment ซึ่งมีอะไรบ้างให้ดูใน api Pyament.js
 app.use('/payment', paymentRouter);
 app.use('/auth', registerRouter);
 app.use('/users', userRouter);
@@ -29,6 +28,7 @@ app.use('/address', addressRouter);
 app.use('/buy', buyProductRouter);
 app.use('/addcoin', addCoinRouter);
 app.use('/history', historyRouter);
+app.use('/package', packageRouter);
 
 app.listen(port, () => {
     console.log(`Backend API listening on port ${port}`);

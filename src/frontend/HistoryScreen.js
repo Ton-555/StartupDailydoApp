@@ -40,7 +40,10 @@ const HistoryScreen = ({ onSelectItem, user }) => {
 
           // Safe product name access
           let prodName = 'Unknown Product';
-          if (order.products) {
+          if (order.products_id === 1001) prodName = 'Standard Plan';
+          else if (order.products_id === 1002) prodName = 'Premium Plan';
+          else if (order.products_id === 1003) prodName = 'Platinum Plan';
+          else if (order.products) {
             if (Array.isArray(order.products)) {
               prodName = order.products[0]?.name || 'Unknown Product';
             } else {
