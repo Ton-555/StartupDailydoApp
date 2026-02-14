@@ -27,7 +27,7 @@ const LoginScreen = ({ onLogin, onNavigateRegister }) => {
       // บันทึกลง globalState
       globalState.setCredentials(username, password);
       if (response.data) {
-        globalState.setUserId(response.data.id);
+        globalState.setUserId(response.data.users_id);
         globalState.setUserEmail(response.data.email || '');
       }
 

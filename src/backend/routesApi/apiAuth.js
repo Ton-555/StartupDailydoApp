@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ success: false, message: 'username already exists' });
         }
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('users')
             .insert([
                 {
@@ -36,11 +36,12 @@ router.post('/register', async (req, res) => {
                     username: userNameToUse,
                     password: password
                 }
-            ], { returning: 'minimal' });
+            ])
+            .select();
 
         if (error) throw error;
 
-        res.status(201).json({ success: true, message: 'บันทึกสำเร็จ' });
+        res.status(201).json({ success: true, message: 'บันทึกสำเร็จ', data: data[0] });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: err.message });

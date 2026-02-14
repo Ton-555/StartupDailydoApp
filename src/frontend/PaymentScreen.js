@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { QrCode, CreditCard as DebitCard, Check } from 'lucide-react-native';
+import { CreditCard as DebitCard, Check } from 'lucide-react-native';
 import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
 import { useTheme } from './context/ThemeContext';
 
 const PaymentScreen = ({ navigate, item }) => {
   const { isDarkMode, colors } = useTheme();
-  const [method, setMethod] = useState('qrcode'); // 'qrcode' | 'card'
+  const [method, setMethod] = useState('card'); // 'card' only
 
   if (!item) return <View style={styles.center}><Text>No item selected</Text></View>;
 
@@ -34,23 +34,7 @@ const PaymentScreen = ({ navigate, item }) => {
 
         <Text style={[styles.sectionHeader, { color: colors.subText }]}>Payment Method</Text>
         <View style={styles.methodsContainer}>
-          <TouchableOpacity
-            onPress={() => setMethod('qrcode')}
-            style={[
-              styles.methodCard,
-              method === 'qrcode'
-                ? [styles.methodSelected, { backgroundColor: colors.card, borderColor: isDarkMode ? '#f4f4f5' : '#18181b' }]
-                : [styles.methodUnselected, { backgroundColor: colors.card, borderColor: colors.border }]
-            ]}
-          >
-            <View style={styles.methodInfo}>
-              <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? colors.background : '#f4f4f5' }]}><QrCode size={24} color={colors.text} /></View>
-              <Text style={[styles.methodTitle, { color: colors.text }]}>QR Code PromptPay</Text>
-            </View>
-            {method === 'qrcode' && (
-              <View style={[styles.checkContainer, { backgroundColor: isDarkMode ? '#f4f4f5' : '#18181b' }]}><Check size={12} color={isDarkMode ? '#18181b' : 'white'} /></View>
-            )}
-          </TouchableOpacity>
+
 
           <TouchableOpacity
             onPress={() => setMethod('card')}

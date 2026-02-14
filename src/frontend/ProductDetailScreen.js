@@ -13,7 +13,9 @@ const ProductDetailScreen = ({ product, navigate }) => {
             <Header title="Product Detail" onBack={() => navigate('shop')} />
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={[styles.imageContainer, { backgroundColor: colors.card, borderColor: colors.border, overflow: 'hidden' }]}>
-                    {product.image ? (
+                    {product.image_uri ? (
+                        <Image source={{ uri: product.image_uri }} style={styles.productImage} />
+                    ) : product.image ? (
                         <Image source={{ uri: product.image }} style={styles.productImage} />
                     ) : (
                         <Text style={styles.productIcon}>{product.icon}</Text>
@@ -24,7 +26,9 @@ const ProductDetailScreen = ({ product, navigate }) => {
 
                 <View style={[styles.priceTag, { backgroundColor: isDarkMode ? '#451a03' : '#fffbeb', borderColor: isDarkMode ? '#78350f' : '#fef3c7' }]}>
                     <Gift size={20} color="#f59e0b" />
-                    <Text style={[styles.priceText, { color: isDarkMode ? '#fde68a' : '#b45309' }]}>{product.price.toLocaleString()} Coins</Text>
+                    <Text style={[styles.priceText, { color: isDarkMode ? '#fde68a' : '#b45309' }]}>
+                      {typeof product.price_coin === 'number' ? product.price_coin.toLocaleString() : '-'} Coins
+                    </Text>
                 </View>
 
                 <View style={[styles.descriptionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>

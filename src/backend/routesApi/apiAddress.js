@@ -27,17 +27,17 @@ router.post('/add-address', async (req, res) => {
         console.error('Error adding address:', error);
         res.status(500).json({ success: false, message: error.message });
     }
-}); 
+});
 
 // POST /address/edit-address - แก้ไขที่อยู่ (ทำงานเหมือน Add)
 router.post('/edit-address', async (req, res) => {
     try {
-        const { id_user, address } = req.body;
+        const { users_id, address } = req.body;
 
         const { data, error } = await supabase
             .from('users')
             .update({ address: address })
-            .eq('id_user', id_user)
+            .eq('users_id', users_id)
             .select();
 
         if (error) {
@@ -59,11 +59,11 @@ router.post('/edit-address', async (req, res) => {
 // POST /address/delete-address - ลบที่อยู่ (Set เป็น NULL หรือค่าว่าง)
 router.post('/delete-address', async (req, res) => {
     try {
-        const { id_user } = req.body;
+        const { users_id } = req.body;
         const { data, error } = await supabase
             .from('users')
             .update({ address: "" }) // แก้จาก null เป็น "" ตาม Requirement
-            .eq('id_user', id_user)
+            .eq('users_id', users_id)
             .select();
 
         if (error) {

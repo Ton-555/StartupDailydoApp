@@ -59,12 +59,7 @@ const RegisterScreen = ({ onRegister, onNavigateLogin }) => {
             Alert.alert('Success', 'Account created successfully!', [
                 {
                     text: 'OK',
-                    onPress: () => onRegister({
-                        username,
-                        email,
-                        fullName,
-                        phone
-                    })
+                    onPress: () => onRegister(response.data)
                 }
             ]);
 

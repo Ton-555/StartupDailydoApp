@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { User, Image as ImageIcon, Gift, Package, ChevronRight } from 'lucide-react-native';
 import Header from './components/Header';
 import { useTheme } from './context/ThemeContext';
 
-const HomeScreen = ({ user, navigate }) => {
+const HomeScreen = ({ user, navigate, onRefreshUser }) => {
   const { isDarkMode, colors, theme } = useTheme();
+
+  useEffect(() => {
+    if (onRefreshUser) {
+      onRefreshUser();
+    }
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

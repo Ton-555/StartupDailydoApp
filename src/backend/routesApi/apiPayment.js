@@ -6,12 +6,14 @@ const omise = require('omise')({
 });
 const supabase = require('../supabase');
 
-//เหลือเปรียบเทียบข้อมูล id ลูกค้า 
-router.get('/allcardtest', async (req, res) => {
+// ดึงข้อมูลบัตรของ user เฉพาะคน
+router.get('/user/:userId', async (req, res) => {
     try {
+        const userId = req.params.userId;
         const { data, error } = await supabase
             .from('card_information')
-            .select('*');
+            .select('*')
+            .eq('user_id', userId);
 
         if (error) {
             throw error;
@@ -19,7 +21,7 @@ router.get('/allcardtest', async (req, res) => {
 
         res.json({ success: true, data });
     } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching user cards:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -27,12 +29,12 @@ router.get('/allcardtest', async (req, res) => {
 //ต้องแก้จากข้อมูล react native เหลือเอาตัวแปรid user มาจาก แอป
 router.post('/addcreditcard', async (req, res) => {
     try {
-        const { user_id, omise_customer_id, number_card, cvv, name_card, expiration_date } = req.body;
+        const { users_id, omise_customer_id, number_card, cvv, name_card, expiration_date } = req.body;
         const { data, error } = await supabase
             .from('card_information')
             .insert([
                 {
-                    user_id,
+                    user_id: users_id,
                     omise_customer_id,
                     number_card,
                     cvv,
@@ -64,28 +66,28 @@ router.post('/addcreditcard', async (req, res) => {
 // POST /payment/deletecard - ลบข้อมูลบัตร
 router.post('/deletecard', async (req, res) => {
     try {
-        const { user_id, id_card } = req.body;
-        console.log(`[DELETE CARD] Request received - user_id: ${user_id}, id_card: ${id_card}`);
+        const { users_id, id_card } = req.body;
+        console.log(`[DELETE CARD] Request received - users_id: ${users_id}, id_card: ${id_card}`);
 
         // Validation: ต้องมี id_card เสมอเพื่อป้องกันการลบทั้งหมด
         if (!id_card) {
             return res.status(400).json({
                 success: false,
-                message: "Missing 'id_card'. Please provide both 'user_id' and 'id_card'."
+                message: "Missing 'id_card'. Please provide both 'users_id' and 'id_card'."
             });
         }
 
         const { error } = await supabase
             .from('card_information')
             .delete()
-            .eq('user_id', user_id)
+            .eq('user_id', users_id)
             .eq('id', id_card); // ต้องตรงทั้ง User ID และ Card ID
 
         if (error) {
             throw error;
         }
 
-        console.log(`[DELETE CARD] Successfully deleted card id: ${id_card} for user: ${user_id}`);
+        console.log(`[DELETE CARD] Successfully deleted card id: ${id_card} for user: ${users_id}`);
 
         res.json({
             success: true,
@@ -140,11 +142,11 @@ router.post('/checkout', async (req, res) => {
 router.post('/savepayment', async (req, res) => {
     try {
         // รับค่าจาก React Native
-        const { success, charge, id_user } = req.body;
+        const { success, charge, users_id } = req.body;
 
         // ตรวจสอบข้อมูลเบื้องต้น
-        if (!id_user || !charge) {
-            return res.status(400).json({ error: 'Missing user_id or charge data' });
+        if (!users_id || !charge) {
+            return res.status(400).json({ error: 'Missing users_id or charge data' });
         }
 
         // 3. บันทึกลง Supabase
@@ -152,7 +154,7 @@ router.post('/savepayment', async (req, res) => {
             .from('payment_logs') // ชื่อตารางที่เราสร้างไว้
             .insert([
                 {
-                    user_id: id_user,           // ตรงกับ user_id ใน React Native
+                    user_id: users_id,           // ตรงกับ user_id ใน React Native
                     omise_charge_id: charge.id,  // "chrgtest..."
                     amount: charge.amount,      // 100000
                     status: success,            // true

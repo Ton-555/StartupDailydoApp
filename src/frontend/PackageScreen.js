@@ -7,11 +7,10 @@ import { useTheme } from './context/ThemeContext';
 const PackageScreen = ({ navigate, onSelectPackage }) => {
     const { isDarkMode, colors } = useTheme();
     const packages = [
-        { id: 1, name: 'Starter', price: 'Free', color: '#f4f4f5', textColor: '#18181b', features: ['Basic rewards', '50 Coins/month', 'Standard Support'], icon: null },
-        { id: 2, name: 'Silver', price: '฿99/mo', color: '#e2e8f0', textColor: '#1e293b', features: ['2x Coin Multiplier', '200 Coins/month', 'Priority Support', 'No Ads'], icon: null },
-        { id: 3, name: 'Gold', price: '฿299/mo', color: '#fef9c3', textColor: '#854d0e', icon: Crown, features: ['5x Coin Multiplier', '1000 Coins/month', 'VIP Access', 'Exclusive Deals', 'Free Shipping'], isPopular: true }
+        { id: 1, name: 'Standard', price: '฿500/mo', priceSatang: 50000, coin: 1000, color: '#f4f4f5', textColor: '#18181b', features: ['Basic rewards', '2200 Coins/month', 'Standard Support'], icon: null },
+        { id: 2, name: 'Premium', price: '฿1000/mo', priceSatang: 100000, coin: 2200, color: '#e2e8f0', textColor: '#1e293b', features: ['2x Coin Multiplier', '3400 Coins/month', 'Priority Support', 'No Ads'], icon: null },
+        { id: 3, name: 'Platinum', price: '฿1500/mo', priceSatang: 150000, coin: 3400, color: '#fef9c3', textColor: '#854d0e', icon: Crown, features: ['5x Coin Multiplier', '4800 Coins/month', 'VIP Access', 'Exclusive Deals', 'Free Shipping'], isPopular: true }
     ];
-
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Header title="Packages" onBack={() => navigate('home')} />
@@ -54,7 +53,7 @@ const PackageScreen = ({ navigate, onSelectPackage }) => {
                             ))}
                         </View>
                         <TouchableOpacity
-                            onPress={() => onSelectPackage({ type: 'package', name: pkg.name + ' Plan', price: pkg.price, detail: 'Monthly Subscription' })}
+                            onPress={() => onSelectPackage({ type: 'package', name: pkg.name + ' Plan', price: pkg.priceSatang > 0 ? `฿${pkg.priceSatang / 100}` : 'Free', priceSatang: pkg.priceSatang, coin: pkg.coin, detail: 'Monthly Subscription' })}
                             style={[
                                 styles.button,
                                 pkg.isPopular ? styles.buttonPopular : [styles.buttonRegular, { backgroundColor: isDarkMode ? '#3f3f46' : '#18181b' }]

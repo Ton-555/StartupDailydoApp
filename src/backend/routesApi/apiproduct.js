@@ -29,7 +29,7 @@ router.get('/:id', async (req, res) => {
         if (!id) return res.status(400).json({ success: false, message: 'Invalid id' });
 
         // Try common id columns as some schemas use different names
-        const idCols = ['id', 'id_product', 'product_id', 'productid'];
+        const idCols = ['id', 'products_id', 'id_product', 'product_id', 'productid'];
         let finalData = null;
         let finalError = null;
 

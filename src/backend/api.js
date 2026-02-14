@@ -15,6 +15,8 @@ const registerRouter = require('./routesApi/apiAuth');
 const productRouter = require('./routesApi/apiproduct');
 const addressRouter = require('./routesApi/apiAddress');
 const buyProductRouter = require('./routesApi/apiBuyProduct');
+const addCoinRouter = require('./routesApi/apiAddCoin');
+const historyRouter = require('./routesApi/apiHistory');
 
 //หลังโค้ดบรรนี้ให้เรียกใช้ api
 
@@ -25,6 +27,8 @@ app.use('/users', userRouter);
 app.use('/products', productRouter);
 app.use('/address', addressRouter);
 app.use('/buy', buyProductRouter);
+app.use('/addcoin', addCoinRouter);
+app.use('/history', historyRouter);
 
 app.listen(port, () => {
     console.log(`Backend API listening on port ${port}`);

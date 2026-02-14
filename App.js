@@ -39,20 +39,23 @@ const useAppLogic = () => {
 
     const login = (userData) => {
         setUser({
+            users_id: userData.users_id,
             username: userData.username,
             email: userData.email || 'user@minimal.app',
             phone: userData.phone || '081-234-5678',
             fullName: (userData.first_name && userData.last_name)
                 ? `${userData.first_name} ${userData.last_name}`
                 : userData.username,
-            idMember: 'MB-' + (userData.id % 10000).toString().padStart(4, '0'),
+            idMember: 'MB-' + (userData.users_id % 10000).toString().padStart(4, '0'),
             coins: userData.coin_balance || 0
         });
-        navigate('home'); // Login สำเร็จไปหน้า Home เลย (หรือ onboarding ตามต้องการ)
+        refreshCards(userData.users_id);
+        navigate('home');
     };
 
     const register = (userData) => {
         setUser({
+            users_id: userData.users_id,
             username: userData.username,
             email: userData.email || 'user@minimal.app',
             phone: userData.phone || '081-234-5678',
@@ -65,6 +68,63 @@ const useAppLogic = () => {
 
     const handleOnboardingComplete = () => navigate('home');
     const handleLogout = () => { setUser(null); navigate('login'); };
+
+    const refreshUser = async (directData = null) => {
+        if (directData) {
+            console.log('[refreshUser] Using direct data:', directData.coin_balance);
+            setUser(prev => {
+                if (!prev) return null;
+                const updated = {
+                    ...prev,
+                    fullName: (directData.first_name && directData.last_name)
+                        ? `${directData.first_name} ${directData.last_name}`
+                        : (directData.first_name || directData.username || prev.username),
+                    coins: Number(directData.coin_balance ?? prev.coins),
+                    email: directData.email || prev.email,
+                    phone: directData.phone || prev.phone
+                };
+                return updated;
+            });
+            return;
+        }
+
+        if (!user || !user.users_id) {
+            console.log('[refreshUser] No user or users_id found', user);
+            return;
+        }
+
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            console.log(`[refreshUser] Fetching latest data for user: ${user.users_id}`);
+            const response = await fetch(`${API_BASE}/users/id/${user.users_id}?t=${Date.now()}`);
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                const userData = result.data;
+                console.log(`[refreshUser] Fetched coin_balance: ${userData.coin_balance}`);
+
+                setUser(prev => {
+                    if (!prev) return null;
+                    const updated = {
+                        ...prev,
+                        fullName: (userData.first_name && userData.last_name)
+                            ? `${userData.first_name} ${userData.last_name}`
+                            : (userData.first_name || userData.username || prev.username),
+                        coins: Number(userData.coin_balance ?? prev.coins),
+                        email: userData.email || prev.email,
+                        phone: userData.phone || prev.phone
+                    };
+                    console.log(`[refreshUser] State updated. New coins: ${updated.coins}`);
+                    return updated;
+                });
+            } else {
+                console.log('[refreshUser] Failed to fetch user data', result);
+            }
+        } catch (error) {
+            console.error('[refreshUser] Error:', error);
+        }
+    };
+
     const handleSelectPurchase = (item) => { setSelectedPurchase(item); navigate('payment'); };
     const handleSelectHistoryItem = (item) => { setSelectedHistoryItem(item); navigate('historyDetail'); };
     const handleSelectProduct = (product) => { setSelectedProduct(product); navigate('productDetail'); };
@@ -75,15 +135,80 @@ const useAppLogic = () => {
     };
     const handleDeleteAddress = (id) => setAddresses(addresses.filter(addr => addr.id !== id));
 
-    const handleAddCard = (card) => setCards([...cards, card]);
-    const handleDeleteCard = (id) => setCards(cards.filter(card => card.id !== id));
+    const refreshCards = async (userId = user?.users_id) => {
+        if (!userId) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/payment/user/${userId}`);
+            const json = await res.json();
+            if (json.success) {
+                const mappedCards = json.data.map(c => ({
+                    id: c.id,
+                    cardNumber: c.number_card,
+                    cardHolder: c.name_card,
+                    expiryDate: c.expiration_date,
+                    cvv: c.cvv,
+                    last4: c.number_card ? c.number_card.slice(-4) : '****'
+                }));
+                setCards(mappedCards);
+            }
+        } catch (err) {
+            console.error('Error fetching cards:', err);
+        }
+    };
+
+    const handleAddCard = async (cardData) => {
+        if (!user || !user.users_id) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/payment/addcreditcard`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    users_id: user.users_id,
+                    number_card: cardData.cardNumber,
+                    name_card: cardData.cardHolder,
+                    expiration_date: cardData.expiryDate,
+                    cvv: cardData.cvv,
+                    omise_customer_id: '' // Optional for now
+                })
+            });
+            const json = await res.json();
+            if (json.success) {
+                refreshCards();
+            }
+        } catch (err) {
+            console.error('Error adding card:', err);
+        }
+    };
+
+    const handleDeleteCard = async (cardId) => {
+        if (!user || !user.users_id) return;
+        try {
+            const API_BASE = 'http://10.0.2.2:3000';
+            const res = await fetch(`${API_BASE}/payment/deletecard`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    users_id: user.users_id,
+                    id_card: cardId
+                })
+            });
+            const json = await res.json();
+            if (json.success) {
+                refreshCards();
+            }
+        } catch (err) {
+            console.error('Error deleting card:', err);
+        }
+    };
 
     return {
         currentScreen, user, navigate, login, register, handleOnboardingComplete, handleLogout,
         handleSelectPurchase, handleSelectHistoryItem, handleSelectProduct,
         selectedPurchase, selectedHistoryItem, selectedProduct,
         addresses, handleAddAddress, handleUpdateAddress, handleDeleteAddress,
-        cards, handleAddCard, handleDeleteCard
+        cards, handleAddCard, handleDeleteCard, refreshUser
     };
 };
 
@@ -101,7 +226,7 @@ const AppContent = () => {
         handleSelectPurchase, handleSelectHistoryItem, handleSelectProduct,
         selectedPurchase, selectedHistoryItem, selectedProduct,
         addresses, handleAddAddress, handleUpdateAddress, handleDeleteAddress,
-        cards, handleAddCard, handleDeleteCard
+        cards, handleAddCard, handleDeleteCard, refreshUser
     } = useAppLogic();
 
     const theme = useTheme();
@@ -111,19 +236,19 @@ const AppContent = () => {
             case 'login': return <LoginScreen onLogin={login} onNavigateRegister={() => navigate('register')} />;
             case 'register': return <RegisterScreen onRegister={register} onNavigateLogin={() => navigate('login')} />;
             case 'onboarding': return <OnboardingScreen onComplete={handleOnboardingComplete} />;
-            case 'home': return <HomeScreen user={user} navigate={navigate} />;
+            case 'home': return <HomeScreen user={user} navigate={navigate} onRefreshUser={refreshUser} />;
             case 'package': return <PackageScreen navigate={navigate} onSelectPackage={handleSelectPurchase} />;
-            case 'topup': return <TopUpScreen navigate={navigate} onSelectPackage={handleSelectPurchase} />;
-            case 'payment': return <PaymentScreen navigate={navigate} item={selectedPurchase} />;
+            case 'topup': return <TopUpScreen navigate={navigate} onSelectPackage={handleSelectPurchase} onRefreshUser={refreshUser} />;
+            case 'payment': return <PaymentScreen navigate={navigate} item={selectedPurchase} user={user} onRefreshUser={refreshUser} />;
             case 'shop': return <ShopScreen onSelectProduct={handleSelectProduct} />;
             case 'productDetail': return <ProductDetailScreen product={selectedProduct} navigate={navigate} />;
-            case 'productCheckout': return <ProductCheckoutScreen product={selectedProduct} navigate={navigate} />;
+            case 'productCheckout': return <ProductCheckoutScreen product={selectedProduct} navigate={navigate} user={user} onRefreshUser={refreshUser} />;
             case 'history': return <HistoryScreen onSelectItem={handleSelectHistoryItem} />;
             case 'historyDetail': return <HistoryDetailScreen item={selectedHistoryItem} navigate={navigate} />;
             case 'profile': return <ProfileScreen user={user} onLogout={handleLogout} navigate={navigate} />;
             case 'address': return <AddressScreen addresses={addresses} onAddAddress={handleAddAddress} onUpdateAddress={handleUpdateAddress} navigate={navigate} />;
             case 'creditcard': return <CreditCardScreen cards={cards} onAddCard={handleAddCard} onDeleteCard={handleDeleteCard} navigate={navigate} />;
-            case 'settings': return <SettingsScreen user={user} navigate={navigate} />;
+            case 'settings': return <SettingsScreen user={user} navigate={navigate} onRefreshUser={refreshUser} />;
             default: return <HomeScreen user={user} navigate={navigate} />;
         }
     };

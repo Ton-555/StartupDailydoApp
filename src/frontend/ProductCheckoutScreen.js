@@ -5,14 +5,64 @@ import Header from './components/Header';
 import MinimalButton from './components/MinimalButton';
 import { useTheme } from './context/ThemeContext';
 
-const ProductCheckoutScreen = ({ product, navigate }) => {
+const ProductCheckoutScreen = ({ product, navigate, user, onRefreshUser }) => {
     const { isDarkMode, colors } = useTheme();
     const [quantity, setQuantity] = useState(1);
     const [months, setMonths] = useState(1);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     if (!product) return <View style={styles.center}><Text>Product not found</Text></View>;
 
-    const totalCoins = product.price * quantity * months;
+    const totalCoins = product.price_coin * quantity * months;
+
+    const handleRedeem = async () => {
+        if (!user || !user.users_id) {
+            Alert.alert('Error', 'User information not found. Please login again.');
+            return;
+        }
+
+        if (user.coins < totalCoins) {
+            Alert.alert('Insufficient Coins', 'You do not have enough coins to redeem this item.');
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            // Android Emulator API BASE
+            const API_BASE = 'http://10.0.2.2:3000';
+
+            const response = await fetch(`${API_BASE}/buy/buy`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: user.users_id,
+                    product_id: product.products_id,
+                    quantity: quantity,
+                    months: months
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Refresh global user state with updated data from backend
+                if (onRefreshUser) await onRefreshUser(result.user);
+
+                Alert.alert('Success!', `Successfully redeemed ${product.name}!`, [
+                    { text: 'OK', onPress: () => navigate('history') }
+                ]);
+            } else {
+                Alert.alert('Redemption Failed', result.error || 'Something went wrong');
+            }
+        } catch (error) {
+            console.error('Redeem error:', error);
+            Alert.alert('Error', 'Could not connect to server.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -22,7 +72,9 @@ const ProductCheckoutScreen = ({ product, navigate }) => {
                 {/* Product Summary */}
                 <View style={[styles.productCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? colors.background : '#fafafa', overflow: 'hidden' }]}>
-                        {product.image ? (
+                        {product.image_uri ? (
+                            <Image source={{ uri: product.image_uri }} style={styles.productImage} />
+                        ) : product.image ? (
                             <Image source={{ uri: product.image }} style={styles.productImage} />
                         ) : (
                             <Text style={styles.iconText}>{product.icon}</Text>
@@ -30,7 +82,7 @@ const ProductCheckoutScreen = ({ product, navigate }) => {
                     </View>
                     <View>
                         <Text style={[styles.productName, { color: colors.text }]}>{product.name}</Text>
-                        <Text style={styles.productPrice}>{product.price.toLocaleString()} Coins / unit</Text>
+                        <Text style={styles.productPrice}>{product.price_coin?.toLocaleString() || '-'} Coins / unit</Text>
                     </View>
                 </View>
 
@@ -99,7 +151,7 @@ const ProductCheckoutScreen = ({ product, navigate }) => {
                     <View style={styles.summaryRows}>
                         <View style={styles.row}>
                             <Text style={[styles.rowLabel, { color: colors.subText }]}>Subtotal ({quantity} items)</Text>
-                            <Text style={[styles.rowValue, { color: colors.subText }]}>{(product.price * quantity).toLocaleString()}</Text>
+                            <Text style={[styles.rowValue, { color: colors.subText }]}>{product.price_coin ? (product.price_coin * quantity).toLocaleString() : '-'}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={[styles.rowLabel, { color: colors.subText }]}>Duration</Text>
@@ -110,11 +162,12 @@ const ProductCheckoutScreen = ({ product, navigate }) => {
                             <Text style={styles.totalValue}>{totalCoins.toLocaleString()}</Text>
                         </View>
                     </View>
-                    <MinimalButton fullWidth onClick={() => {
-                        Alert.alert('Redeemed!', `Successfully redeemed ${product.name} x${quantity} for ${months} months! Total: ${totalCoins} Coins.`);
-                        navigate('history');
-                    }}>
-                        Confirm & Redeem
+                    <MinimalButton
+                        fullWidth
+                        onClick={handleRedeem}
+                        disabled={isProcessing}
+                    >
+                        {isProcessing ? 'Processing...' : 'Confirm & Redeem'}
                     </MinimalButton>
                 </View>
             </ScrollView>
